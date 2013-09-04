@@ -64,8 +64,6 @@ public class BackendApplication implements SparkApplication {
                 final Map input = requestBodyToMap(request);
                 final String id = param(input, "id", null);
                 final Map<String, Object> result = backendService.init(service, input);
-                //pass the session id in case the client is not capable of reading headers, like XHR requests
-                result.put("sessionId", request.raw().getSession(false).getId().toString());
                 return new Gson().toJson(result);
             }
 

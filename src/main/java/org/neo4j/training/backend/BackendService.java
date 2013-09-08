@@ -30,7 +30,7 @@ public class BackendService {
     }
 
     protected GraphStorage createGraphStorage() {
-        final String restUrl = System.getenv("NEO4J_REST_URL");
+        final String restUrl = System.getenv("NEO4J_URL");
         final String login = System.getenv("NEO4J_LOGIN");
         final String password = System.getenv("NEO4J_PASSWORD");
         GraphStorage storage = null;

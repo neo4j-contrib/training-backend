@@ -13,12 +13,29 @@ curl -H X-Session:239739847 -XPOST http://neo4j-training-backend.herokuapp.com/b
 
 // initialize, is optional
 curl -H X-Session:239739847 -XPOST http://neo4j-training-backend.herokuapp.com/backend/init \
- -d'{"init":"create (:User {name:"Andreas"}),(:User {name:"Michael"})","query":"MATCH (n:User) return n"}'
+ -d'{"init":"create (:User {name:\"Andreas\"}),(:User {name:\"Michael\"})","query":"MATCH (n:User) return n"}'
 
 // delete, cleanup session
 curl -H X-Session:239739847 -XDELETE http://neo4j-training-backend.herokuapp.com/backend
 
 ````
+
+With session handling:
+````
+// store database setup with provided id using /backend/save
+curl -H X-Session:239739847 -XPOST http://neo4j-training-backend.herokuapp.com/backend/save \
+ -d'{"id":"users-graph","init":"create (:User {name:\"Andreas\"}),(:User {name:\"Michael\"})"}'
+
+
+// initialize with session-id, fallback to the provided setup-id
+// returns also previously stored history
+curl -H X-Session:239739847 -XPOST http://neo4j-training-backend.herokuapp.com/backend/init \
+ -d'{"id":"users-graph"}'
+
+// on shutdown/timeout changed database state and input history is saved to storage
+// so on next init the modified state will be used as initial state and stored history will be returned
+````
+
 
 ### Run locally:
 

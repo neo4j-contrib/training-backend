@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Map;
@@ -31,15 +32,28 @@ public class BackendService {
 
     protected GraphStorage createGraphStorage() {
         final String restUrl = System.getenv("NEO4J_URL");
-        final String login = System.getenv("NEO4J_LOGIN");
-        final String password = System.getenv("NEO4J_PASSWORD");
+        RestAPI api = createRestApi(restUrl);
         GraphStorage storage = null;
-        if (restUrl!=null) {
-            final RestAPI api = new RestAPIFacade(restUrl, login, password);
-            storage = new GraphStorage(api);
-        }
-        log("Graph Storage " + restUrl + " login " + login + " " + password + " " + storage);
+        if (api!=null) storage = new GraphStorage(api);
+        log("Graph Storage " + restUrl + "storage" + storage);
         return storage;
+    }
+
+    private RestAPI createRestApi(String restUrl) {
+        if (!restUrl.contains("/db/data")) restUrl += "/db/data";
+        String login = System.getenv("NEO4J_LOGIN");
+        String password = System.getenv("NEO4J_PASSWORD");
+        if (login != null && password != null) return new RestAPIFacade(restUrl, login, password);
+
+        try {
+            URL url = new URL(restUrl);
+            String userInfo = url.getUserInfo();
+            if (userInfo==null || userInfo.trim().isEmpty()) return new RestAPIFacade(restUrl);
+            return new RestAPIFacade(restUrl, userInfo.split(":")[0],userInfo.split(":")[1]);
+        } catch (MalformedURLException e) {
+            LOG.error("Invalid storage url "+restUrl,e);
+            return null;
+        }
     }
 
     private void log(String msg) {

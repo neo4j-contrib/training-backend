@@ -75,6 +75,7 @@ class SessionService {
     public static Neo4jService getService(final HttpServletRequest request,boolean create) {
         String sessionId = getSessionId(request);
         try {
+            if (sessionId==null) throw new IllegalStateException("No Session-Id in request header "+SESSION_HEADER);
             Neo4jService service = sessions.get(sessionId);
             lastUsage.put(sessionId,System.currentTimeMillis());
             if (service != null) return service;
@@ -126,7 +127,7 @@ class SessionService {
         }
     }
 
-    private static String getSessionId(HttpServletRequest request) {
+    static String getSessionId(HttpServletRequest request) {
         return request.getHeader(SESSION_HEADER);
     }
 

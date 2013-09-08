@@ -1,5 +1,8 @@
 package org.neo4j.training.backend;
 
+import org.neo4j.helpers.collection.IteratorUtil;
+
+import java.util.Iterator;
 import java.util.Random;
 
 /**
@@ -22,6 +25,18 @@ public class Util {
             result.insert(0, c);
             value /= 36;
         } while (value > 0);
+        return result.toString();
+    }
+
+    public static String join(Iterable iterable, String delim) {
+        StringBuilder result=new StringBuilder();
+        Iterator it = iterable.iterator();
+        while (it.hasNext()) {
+            Object next = it.next();
+            if (next == null) continue;
+            result.append(next.toString());
+            if (it.hasNext()) result.append(delim);
+        }
         return result.toString();
     }
 }

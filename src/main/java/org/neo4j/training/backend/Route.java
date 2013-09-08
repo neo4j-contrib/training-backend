@@ -31,6 +31,10 @@ abstract class Route extends spark.Route {
         return message;
     }
 
+    protected String getSessionId(Request request) {
+        return SessionService.getSessionId(request.raw());
+    }
+
     @Override
     public Object handle(Request request, Response response) {
         Transaction tx = null;

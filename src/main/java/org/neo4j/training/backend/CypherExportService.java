@@ -19,12 +19,18 @@ class CypherExportService {
     }
 
     public String export() {
-        StringBuilder sb = new StringBuilder();
-        init(sb);
-        int count = appendNodes(sb);
-        count = appendRelationships(sb, count);
-        if (count > 0) return sb.toString();
-        return "";
+        Transaction tx = gdb.beginTx();
+        try {
+            StringBuilder sb = new StringBuilder();
+            init(sb);
+            int count = appendNodes(sb);
+            count = appendRelationships(sb, count);
+            if (count > 0) return sb.toString();
+            return "";
+        } finally {
+            tx.success();
+            tx.finish();
+        }
     }
 
     private void init(StringBuilder sb) {

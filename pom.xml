@@ -47,6 +47,33 @@
       </exclusions>
     </dependency>
       <dependency>
+          <groupId>org.neo4j</groupId>
+          <artifactId>neo4j-rest-graphdb</artifactId>
+          <version>1.9</version>
+          <exclusions>
+              <exclusion>
+                  <groupId>org.neo4j</groupId>
+                  <artifactId>neo4j</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>org.neo4j</groupId>
+                  <artifactId>server-api</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>org.neo4j</groupId>
+                  <artifactId>neo4j</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>org.neo4j</groupId>
+                  <artifactId>neo4j-kernel</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>org.neo4j</groupId>
+                  <artifactId>neo4j-lucene-index</artifactId>
+              </exclusion>
+          </exclusions>
+      </dependency>
+      <dependency>
           <groupId>org.mockito</groupId>
           <artifactId>mockito-core</artifactId>
           <version>1.8.4</version>

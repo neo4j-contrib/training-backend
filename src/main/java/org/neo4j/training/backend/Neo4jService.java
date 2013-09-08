@@ -4,10 +4,7 @@ import org.neo4j.graphdb.*;
 import org.neo4j.test.ImpermanentGraphDatabase;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.neo4j.helpers.collection.MapUtil.map;
 import static org.neo4j.helpers.collection.MapUtil.stringMap;
@@ -27,6 +24,8 @@ class Neo4jService {
     private CypherExportService cypherExportService;
     private String version;
     private boolean initialized;
+    private ShutdownHook shutdownHook;
+    private Collection<String> history = new LinkedHashSet<>();
 
     Neo4jService() throws Throwable {
         this(createInMemoryDatabase(),true);
@@ -63,8 +62,14 @@ class Neo4jService {
         return invalidQuery ? cypherQueryViz((CypherQueryExecutor.CypherResult) null) : cypherQueryViz(cypherQuery(query));
     }
     public Map cypherQueryViz(CypherQueryExecutor.CypherResult result) {
-        final SubGraph subGraph = SubGraph.from(gdb).markSelection(result);
-        return map("nodes", subGraph.getNodes().values(), "links", subGraph.getRelationshipsWithIndexedEnds().values());
+        Transaction tx = gdb.beginTx();
+        try {
+            final SubGraph subGraph = SubGraph.from(gdb).markSelection(result);
+            return map("nodes", subGraph.getNodes().values(), "links", subGraph.getRelationshipsWithIndexedEnds().values());
+        } finally {
+            tx.success();
+            tx.finish();
+        }
     }
 
     public String exportToCypher() {
@@ -83,17 +88,38 @@ class Neo4jService {
         return cypherQueryExecutor.cypherQuery(query,null);
     }
     public CypherQueryExecutor.CypherResult cypherQuery(String query) {
+        addToHistory(query);
         return cypherQueryExecutor.cypherQuery(query,version);
     }
 
+    private void addToHistory(String query) {
+        if (query==null) return;
+        query = query.trim();
+        if (history.contains(query)) history.remove(query);
+        history.add(query);
+    }
+
     public void stop() {
-        if (gdb!=null) {
-            LOG.warn("Shutting down service "+this);
-            if (ownsDatabase) gdb.shutdown();
-            index = null;
-            cypherQueryExecutor=null;
-            cypherExportService =null;
-            gdb=null;
+        runShutdownHook();
+        shutdownDb();
+    }
+
+    private void shutdownDb() {
+        if (gdb == null) return;
+        LOG.warn("Shutting down service "+this);
+        if (ownsDatabase) gdb.shutdown();
+        index = null;
+        cypherQueryExecutor=null;
+        cypherExportService =null;
+        gdb=null;
+    }
+
+    private void runShutdownHook() {
+        if (shutdownHook == null) return;
+        try {
+            shutdownHook.shutdown(this);
+        } catch (Throwable t) {
+            LOG.error("Error during shutdown",t);
         }
     }
 
@@ -196,5 +222,16 @@ class Neo4jService {
 
     public Transaction begin() {
         return gdb.beginTx();
+    }
+
+    public Collection<String> getHistory() {
+        return history;
+    }
+
+    public interface ShutdownHook {
+        void shutdown(Neo4jService neo4jService);
+    }
+    public void setShutdownHook(ShutdownHook shutdownHook) {
+        this.shutdownHook = shutdownHook;
     }
 }

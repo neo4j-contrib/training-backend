@@ -42,6 +42,15 @@ public class BackendApplication implements SparkApplication {
                 return new Gson().toJson(backendService.execute(service, null, query, null));
             }
         });
+        post(new Route("/backend/save") {
+            protected Object doHandle(Request request, Response response, Neo4jService service) {
+                final Map input = requestBodyToMap(request);
+                final String id = param(input, "id", null);
+                final String init = param(input, "init", null);
+                final Map<String, Object> result = backendService.save(id,init);
+                return new Gson().toJson(result);
+            }
+        });
         post( new Route( "/backend/version" )
         {
             protected Object doHandle( Request request, Response response, Neo4jService service )
@@ -62,8 +71,13 @@ public class BackendApplication implements SparkApplication {
 
             protected Object doHandle(Request request, Response response, Neo4jService service) {
                 final Map input = requestBodyToMap(request);
+                final Map<String, Object> result;
                 final String id = param(input, "id", null);
-                final Map<String, Object> result = backendService.init(service, input);
+                if (id != null) {
+                    result = backendService.init(service, id, getSessionId(request));
+                } else {
+                    result = backendService.init(service, input, getSessionId(request));
+                }
                 return new Gson().toJson(result);
             }
 

@@ -1,5 +1,7 @@
 package org.neo4j.training.backend;
 
+import org.neo4j.rest.graphdb.RestAPI;
+import org.neo4j.rest.graphdb.RestAPIFacade;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -10,6 +12,8 @@ import java.util.Map;
 import java.util.Scanner;
 
 import static org.neo4j.helpers.collection.MapUtil.map;
+import static org.neo4j.helpers.collection.MapUtil.store;
+import static org.neo4j.training.backend.Util.join;
 
 /**
 * @author mh
@@ -19,7 +23,23 @@ public class BackendService {
 
     private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(BackendService.class);
 
+    private final GraphStorage storage;
+
     public BackendService() {
+        this.storage = createGraphStorage();
+    }
+
+    protected GraphStorage createGraphStorage() {
+        final String restUrl = System.getenv("NEO4J_REST_URL");
+        final String login = System.getenv("NEO4J_LOGIN");
+        final String password = System.getenv("NEO4J_PASSWORD");
+        GraphStorage storage = null;
+        if (restUrl!=null) {
+            final RestAPI api = new RestAPIFacade(restUrl, login, password);
+            storage = new GraphStorage(api);
+        }
+        log("Graph Storage " + restUrl + " login " + login + " " + password + " " + storage);
+        return storage;
     }
 
     private void log(String msg) {
@@ -105,9 +125,75 @@ public class BackendService {
         return data;
     }
 
-    public Map<String, Object> init(Neo4jService service, Map<String,Object> input) {
+    public Map<String, Object> init(Neo4jService service, Map<String,Object> input, String session) {
         input.put("init",param(input,"init",null));
         input.put("query",param(input,"query",null));
-        return execute(service, GraphInfo.from(input));
+        Map<String, Object> result = execute(service, GraphInfo.from(input));
+        service.setShutdownHook(createShutdownHook(service, session));
+        return result;
+    }
+
+    Map<String, Object> init(final Neo4jService service, String id, final String session) {
+        GraphInfo info = findForSessionOrId(id, session);
+        final Map<String, Object> result;
+        if (info!=null) {
+            result = execute(service, info.getInit(), info.getQuery(), info.getVersion());
+            result.put("message",info.getMessage());
+            result.put("history",info.getHistory());
+        } else {
+            result = execute(service, GraphInfo.from(map()));
+            result.put("error","Graph not found for id " + id+ " rendering default");
+        }
+        service.setShutdownHook(createShutdownHook(service, session));
+        return result;
+    }
+
+    private GraphInfo findForSessionOrId(String id, String session) {
+        if (storage == null) return null;
+        GraphInfo info = storage.find(session);
+        if (info != null) return info;
+        return storage.find(id);
+    }
+
+    private Neo4jService.ShutdownHook createShutdownHook(final Neo4jService service, final String session) {
+        return new Neo4jService.ShutdownHook() {
+            String initialState = service.exportToCypher();
+
+            public void shutdown(Neo4jService neo4jService) {
+                String currentState = neo4jService.exportToCypher();
+                if (currentState.equals(initialState)) return;
+
+                if (storage==null) return;
+
+                GraphInfo existingState = storage.find(session);
+                String history = join(service.getHistory(), ";");
+                if (existingState==null) {
+                    storage.create(new GraphInfo(session, currentState, "none", "none").withHistory(history).noRoot());
+                }
+                else {
+                    String newHistory = existingState.getQuery() + ";" + history;
+                    storage.update(new GraphInfo(session, currentState, "none", "none").withHistory(newHistory).noRoot());
+                }
+            }
+        };
+    }
+
+    public Map<String, Object> save(String id, String init) {
+        if (storage==null) {
+            return map("error","no storage configured");
+        }
+        GraphInfo existingState = storage.find(id);
+        GraphInfo info = new GraphInfo(id, init, "none", "none").noRoot();
+        Map<String, Object> result = info.toMap();
+        if (existingState==null) {
+            GraphInfo newInfo = storage.create(info);
+            if (newInfo == null) result.put("error","error during create");
+            else result = newInfo.toMap();
+            result.put("action","create");
+        } else {
+            storage.update(info);
+            result.put("action", "update");
+        }
+        return result;
     }
 }

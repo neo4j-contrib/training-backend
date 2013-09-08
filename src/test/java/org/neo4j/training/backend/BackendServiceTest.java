@@ -2,10 +2,12 @@ package org.neo4j.training.backend;
 
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.neo4j.rest.graphdb.RestAPI;
 
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class BackendServiceTest {
 
@@ -47,5 +49,28 @@ public class BackendServiceTest {
         assertEquals("update",result.get("action"));
         assertEquals(ID,result.get("id"));
         assertEquals(INIT,result.get("init"));
+    }
+
+    @Test
+    public void testParseRestUrl() throws Exception {
+        String url = "http://foo:bar@79b160a50.hosted.neo4j.org:7622";
+        RestAPI restApi = BackendService.createRestApi(url);
+        assertNotNull(restApi);
+        assertEquals(url+"/db/data",restApi.getBaseUri());
+    }
+
+    @Test
+    public void testParseRestUrlWithoutAuth() throws Exception {
+        String url = "http://79b160a50.hosted.neo4j.org:7622";
+        RestAPI restApi = BackendService.createRestApi(url);
+        assertNotNull(restApi);
+        assertEquals(url+"/db/data",restApi.getBaseUri());
+    }
+    @Test
+    public void testParseRestUrlForLocalhost() throws Exception {
+        String url = "http://localhost:7474";
+        RestAPI restApi = BackendService.createRestApi(url);
+        assertNotNull(restApi);
+        assertEquals(url+"/db/data",restApi.getBaseUri());
     }
 }

@@ -39,7 +39,8 @@ public class BackendService {
         return storage;
     }
 
-    private RestAPI createRestApi(String restUrl) {
+    protected static RestAPI createRestApi(String restUrl) {
+        if (restUrl==null) return null;
         if (!restUrl.contains("/db/data")) restUrl += "/db/data";
         String login = System.getenv("NEO4J_LOGIN");
         String password = System.getenv("NEO4J_PASSWORD");

@@ -51,6 +51,12 @@ public class BackendApplication implements SparkApplication {
                 return new Gson().toJson(result);
             }
         });
+        delete(new Route("/backend/save/:id") {
+            protected Object doHandle(Request request, Response response, Neo4jService service) {
+                String id = request.params("id");
+                return backendService.delete(id);
+            }
+        });
         post( new Route( "/backend/version" )
         {
             protected Object doHandle( Request request, Response response, Neo4jService service )

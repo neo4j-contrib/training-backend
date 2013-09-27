@@ -211,4 +211,16 @@ public class BackendService {
         }
         return result;
     }
+
+    public boolean delete(String id) {
+        try {
+            if (storage != null) {
+                storage.delete(id);
+                return true;
+            }
+        } catch(Exception e) {
+            log(e.getMessage());
+        }
+        return false;
+    }
 }

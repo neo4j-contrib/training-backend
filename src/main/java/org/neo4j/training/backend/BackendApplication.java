@@ -42,7 +42,7 @@ public class BackendApplication implements SparkApplication {
                 return new Gson().toJson(backendService.execute(service, null, query, null));
             }
         });
-        post(new Route("/backend/save") {
+        post(new Route("/backend/graph") {
             protected Object doHandle(Request request, Response response, Neo4jService service) {
                 final Map input = requestBodyToMap(request);
                 final String id = param(input, "id", null);
@@ -51,7 +51,7 @@ public class BackendApplication implements SparkApplication {
                 return new Gson().toJson(result);
             }
         });
-        delete(new Route("/backend/save/:id") {
+        delete(new Route("/backend/graph/:id") {
             protected Object doHandle(Request request, Response response, Neo4jService service) {
                 String id = request.params("id");
                 return backendService.delete(id);

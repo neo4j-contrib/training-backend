@@ -23,9 +23,11 @@ curl -H X-Session:239739847 -XDELETE http://neo4j-training-backend.herokuapp.com
 With session handling:
 ````
 // store database setup with provided id using /backend/save
-curl -H X-Session:239739847 -XPOST http://neo4j-training-backend.herokuapp.com/backend/graph \
- -d'{"id":"users-graph","init":"create (:User {name:\"Andreas\"}),(:User {name:\"Michael\"})"}'
+curl -H X-Session:239739847 -XPOST http://neo4j-training-backend.herokuapp.com/backend/graph/:id \
+ -d'cypher statement(s)'
 
+curl -H X-Session:239739847 -XPOST http://neo4j-training-backend.herokuapp.com/backend/graph/users-graph \
+ -d'create (:User {name:"Andreas"}),(:User {name:"Michael"})'
 
 curl -H X-Session:239739847 -XDELETE http://neo4j-training-backend.herokuapp.com/backend/graph/:id
 

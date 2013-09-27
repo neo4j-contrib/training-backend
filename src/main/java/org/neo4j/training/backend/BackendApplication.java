@@ -42,18 +42,38 @@ public class BackendApplication implements SparkApplication {
                 return new Gson().toJson(backendService.execute(service, null, query, null));
             }
         });
+        post(new Route("/backend/cypher/:id") {
+            protected Object doHandle(Request request, Response response, Neo4jService service) {
+                if (!service.isInitialized()) {
+                    String id = request.params("id");
+                    Map<String, Object> result = backendService.init(service, id, getSessionId(request));
+                    if (result.containsKey("error")) {
+                        return new Gson().toJson(result);
+                    }
+                }
+                String query = request.body();
+                if (query!=null && !query.isEmpty()) {
+                    LOG.warn( "cypher: "+query );
+                } else {
+                    query = "none";
+                }
+                return new Gson().toJson(backendService.execute(service, null, query, null));
+            }
+        });
         post(new Route("/backend/graph/:id") {
             protected Object doHandle(Request request, Response response, Neo4jService service) {
                 String id = request.params("id");
                 String init = request.body();
-                final Map<String, Object> result = backendService.save(id,init);
+                final Map<String, Object> result = backendService.save(id, init);
                 return new Gson().toJson(result);
             }
         });
         delete(new Route("/backend/graph/:id") {
             protected Object doHandle(Request request, Response response, Neo4jService service) {
                 String id = request.params("id");
-                return backendService.delete(id);
+                boolean result = backendService.delete(id);
+                SessionService.cleanSession(id);
+                return result;
             }
         });
         post( new Route( "/backend/version" )

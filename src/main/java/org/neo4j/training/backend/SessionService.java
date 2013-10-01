@@ -35,7 +35,6 @@ class SessionService {
                 for (Map.Entry<String, Long> entry : entries) {
                     if (entry.getValue() < unusedTime) {
                         cleanSession(entry.getKey());
-                        lastUsage.remove(entry.getKey());
                     }
                 }
             }
@@ -69,6 +68,7 @@ class SessionService {
             e.printStackTrace();
         } finally {
             sessions.remove(sessionId);
+            lastUsage.remove(sessionId);
         }
     }
 

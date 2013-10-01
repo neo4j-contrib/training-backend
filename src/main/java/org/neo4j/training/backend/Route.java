@@ -1,6 +1,7 @@
 package org.neo4j.training.backend;
 
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TransactionFailureException;
 import org.slf4j.Logger;
 import org.neo4j.kernel.lifecycle.LifecycleException;
 import spark.HaltException;
@@ -62,7 +63,13 @@ abstract class Route extends spark.Route {
             fail(tx);
             return handleException(e);
         } finally {
-            if (tx!=null) tx.finish();
+            if (tx!=null) {
+                try {
+                    tx.finish();
+                } catch (TransactionFailureException tfe) {
+                    LOG.warn("Could not commit transaction",tfe.getMessage());
+                }
+            }
         }
     }
 

@@ -90,8 +90,8 @@ public class BackendService {
             data.put("visualization", service.cypherQueryViz(result));
             trace("viz", time);
         } catch (Exception e) {
-            e.printStackTrace();
-            data.put("error", e.toString());
+            LOG.error("Error executing init: "+init+" query: "+query,e);
+            data.put("error", e.getMessage());
         }
         time = trace("all", start);
         data.put("time", time-start);

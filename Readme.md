@@ -14,7 +14,7 @@ curl -H X-Session:123 -XPOST http://neo4j-training-backend.herokuapp.com/backend
 // initialize
 curl -H X-Session:123 -XPOST http://neo4j-training-backend.herokuapp.com/backend/cypher/:id
 
-// delete, cleanup session
+// delete, cleanup memory session
 curl -H X-Session:123 -XDELETE http://neo4j-training-backend.herokuapp.com/backend
 
 ````
@@ -25,12 +25,14 @@ With persistent session handling:
 curl -H X-Session:123 -XPOST http://neo4j-training-backend.herokuapp.com/backend/graph/:id \
  -d'cypher statement(s)'
 
+//e.g.
 curl -H X-Session:123 -XPOST http://neo4j-training-backend.herokuapp.com/backend/graph/users-graph \
  -d'create (:User {name:"Andreas"}),(:User {name:"Michael"})'
 
 // delete persisted session state also removes the in-memory session with the same id if any
 curl -H X-Session:123 -XDELETE http://neo4j-training-backend.herokuapp.com/backend/graph/:id
 
+// e.g
 curl -H X-Session:123 -XDELETE http://neo4j-training-backend.herokuapp.com/backend/graph/users-graph
 curl -H X-Session:123 -XDELETE http://neo4j-training-backend.herokuapp.com/backend/graph/123
 

@@ -1,6 +1,7 @@
 package org.neo4j.training.backend;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.neo4j.graphdb.*;
 import org.neo4j.tooling.GlobalGraphOperations;
 
@@ -13,6 +14,7 @@ import java.util.TreeMap;
  */
 class CypherExportService {
     private final GraphDatabaseService gdb;
+    private Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
     CypherExportService(GraphDatabaseService gdb) {
         this.gdb = gdb;
@@ -106,7 +108,7 @@ class CypherExportService {
         final Map<String, Object> properties = toMap(pc);
         if (properties.isEmpty()) return;
         sb.append(" ");
-        final String jsonString = new Gson().toJson(properties);
+        final String jsonString = gson.toJson(properties);
         sb.append(removeNameQuotes(jsonString));
     }
 

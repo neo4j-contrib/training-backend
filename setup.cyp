@@ -186,11 +186,27 @@ Lab-Session 5 busiest actors
     },
     {
       "check": "output",
-      "test": "Gene Hackman",
+      "results": "Gene Hackman",
       "failMsg": "We expected someone else."
     }
   ]
 }
+
+
+##Recommend 3 actors that Keanu Reeves should work with (but hasn’t).##
+
+This is kind of a *friends-of-a-friend* query, only that we don't have `FRIEND` relationships here but co-acting in a movie (`ACTS_IN`). So it might be a bit verbose in the first place. There are different approaches for the recommendation. So keep in mind that the top 3 most frequently appearing people in that network seem to be good candidates.
+
+Advanced Lab: Recommendations for Keanu Reeves
+
+MATCH (keanu:Person)-[:ACTS_IN]->()<-[:ACTS_IN]-(colleague)
+      (co_colleague)-[:ACTS_IN]->()<-[:ACTS_IN]-(colleague)
+WHERE not(keanu = co_colleague) 
+AND not (co_colleague)-[:ACTS_IN]->()<-[:ACTS_IN]-(keanu)
+RETURN co_colleague, count(*)
+ORDER BY count(*) DESC
+LIMIT 3
+
 
 
 ƒCREATE (TheMatrix:Movie {title:'The Matrix', released:1999, tagline:'Welcome to the Real World'})

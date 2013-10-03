@@ -7,6 +7,7 @@ import static spark.Spark.post;
 
 import java.util.Map;
 
+import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
 
 import spark.Request;
@@ -39,7 +40,7 @@ public class BackendApplication implements SparkApplication {
                 if (query!=null && !query.isEmpty()) {
                     LOG.warn( "cypher: "+query );
                 }
-                return new Gson().toJson(backendService.execute(service, null, query, null));
+                return gson().toJson(backendService.execute(service, null, query, null));
             }
         });
         post(new Route("/backend/cypher/:id") {
@@ -48,7 +49,7 @@ public class BackendApplication implements SparkApplication {
                     String id = request.params("id");
                     Map<String, Object> result = backendService.init(service, id, getSessionId(request));
                     if (result.containsKey("error")) {
-                        return new Gson().toJson(result);
+                        return gson().toJson(result);
                     }
                 }
                 String query = request.body();
@@ -57,7 +58,7 @@ public class BackendApplication implements SparkApplication {
                 } else {
                     query = "none";
                 }
-                return new Gson().toJson(backendService.execute(service, null, query, null));
+                return gson().toJson(backendService.execute(service, null, query, null));
             }
         });
         post(new Route("/backend/graph/:id") {
@@ -65,7 +66,7 @@ public class BackendApplication implements SparkApplication {
                 String id = request.params("id");
                 String init = request.body();
                 final Map<String, Object> result = backendService.save(id, init);
-                return new Gson().toJson(result);
+                return gson().toJson(result);
             }
         });
         delete(new Route("/backend/graph/:id") {
@@ -82,7 +83,7 @@ public class BackendApplication implements SparkApplication {
             {
                 final String version = request.body();
                 service.setVersion( version );
-                return new Gson().toJson( map("version", service.getVersion()) );
+                return gson().toJson(map("version", service.getVersion()));
             }
         } );
         post(new Route("/backend/init") {
@@ -103,14 +104,14 @@ public class BackendApplication implements SparkApplication {
                 } else {
                     result = backendService.init(service, input, getSessionId(request));
                 }
-                return new Gson().toJson(result);
+                return gson().toJson(result);
             }
 
         });
         get(new Route("/backend/visualization") {
             protected Object doHandle(Request request, Response response, Neo4jService service) {
                 String query = request.queryParams("query");
-                return new Gson().toJson(service.cypherQueryViz(query));
+                return gson().toJson(service.cypherQueryViz(query));
             }
         });
         delete(new Route("/backend") {
@@ -121,8 +122,12 @@ public class BackendApplication implements SparkApplication {
         });
     }
 
+    private Gson gson() {
+        return new GsonBuilder().disableHtmlEscaping().create();
+    }
+
     private Map requestBodyToMap(Request request) {
-        Map result = new Gson().fromJson(request.body(), Map.class);
+        Map result = gson().fromJson(request.body(), Map.class);
         return result!=null ? result : map();
     }
 }

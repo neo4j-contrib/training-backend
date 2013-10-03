@@ -199,17 +199,62 @@ This is kind of a *friends-of-a-friend* query, only that we don't have `FRIEND` 
 
 Advanced Lab: Recommendations for Keanu Reeves
 
-MATCH (keanu:Person)-[:ACTS_IN]->()<-[:ACTS_IN]-(colleague)
-      (co_colleague)-[:ACTS_IN]->()<-[:ACTS_IN]-(colleague)
+MATCH (keanu:Person)-[:ACTED_IN]->()<-[:ACTED_IN]-(colleague),
+      (co_colleague)-[:ACTED_IN]->()<-[:ACTED_IN]-(colleague)
 WHERE not(keanu = co_colleague) 
 AND not (co_colleague)-[:ACTS_IN]->()<-[:ACTS_IN]-(keanu)
 RETURN co_colleague, count(*)
 ORDER BY count(*) DESC
 LIMIT 3
 
+{
+  "message": "Lab: Recommend 3 actors that Keanu Reeves should work with (but hasn't)",
+  "tasks": [
+    {
+      "check": "input",
+      "test": "Keanu Reeves",
+      "failMsg": "You should look for Keanu Reeves"
+    },
+    {
+      "check": "input",
+      "test": ":ACTED_IN",
+      "failMsg": "Your paths should use the ACTED_IN relationship several times"
+    },
+    {
+      "check": "input",
+      "test": "count",
+      "failMsg": "You probably want to count the ocurrences"
+    },
+    {
+      "check": "input",
+      "test": "order by",
+      "failMsg": "Ordering the results makes a lot of sense for top n"
+    },
+    {
+      "check": "input",
+      "test": "desc",
+      "failMsg": "Remember to use the right sort order."
+    },
+    {
+      "check": "input",
+      "test": "limit 3",
+      "failMsg": "You're still interested in the top 3, remember how to limit the output?"
+    },
+    {
+      "check": "input",
+      "test": "not",
+      "failMsg": "Did you remember to exclude the ones he already worked with?"
+    },
+    {
+      "check": "results",
+      "results": "(Meg Ryan|Val Kilmer)",
+      "failMsg": "We expected someone else."
+    }
+  ]
+}
 
 
-ƒCREATE (TheMatrix:Movie {title:'The Matrix', released:1999, tagline:'Welcome to the Real World'})
+CREATE (TheMatrix:Movie {title:'The Matrix', released:1999, tagline:'Welcome to the Real World'})
 CREATE (Keanu:Person {name:'Keanu Reeves', born:1964})
 CREATE (Carrie:Person {name:'Carrie-Anne Moss', born:1967})
 CREATE (Laurence:Person {name:'Laurence Fishburne', born:1961})

@@ -199,12 +199,12 @@ This is kind of a *friends-of-a-friend* query, only that we don't have `FRIEND` 
 
 Advanced Lab: Recommendations for Keanu Reeves
 
-MATCH (keanu:Person)-[:ACTED_IN]->()<-[:ACTED_IN]-(colleague),
-      (co_colleague)-[:ACTED_IN]->()<-[:ACTED_IN]-(colleague)
-WHERE not(keanu = co_colleague) 
-AND not (co_colleague)-[:ACTS_IN]->()<-[:ACTS_IN]-(keanu)
-RETURN co_colleague, count(*)
-ORDER BY count(*) DESC
+MATCH (keanu:Person)-[:ACTED_IN]->()<-[:ACTED_IN]-(colleague), 
+      (co_colleague)-[:ACTED_IN]->()<-[:ACTED_IN]-(colleague) 
+WHERE keanu.name = "Keanu Reeves" AND not(keanu = co_colleague)  
+AND not (co_colleague)-[:ACTS_IN]->()<-[:ACTS_IN]-(keanu) 
+RETURN co_colleague, count(*) 
+ORDER BY count(*) DESC 
 LIMIT 3
 
 {
@@ -273,6 +273,7 @@ CREATE
 
 
 CREATE (TopGun:Movie {title:'Top Gun', released:1986, tagline:'I feel the need, the need for speed.'})
+CREATE (TomC:Person {name:'Tom Cruise', born:1962})
 CREATE (KellyM:Person {name:'Kelly McGillis', born:1957})
 CREATE (ValK:Person {name:'Val Kilmer', born:1959})
 CREATE (AnthonyE:Person {name:'Anthony Edwards', born:1962})
@@ -299,6 +300,7 @@ CREATE (BonnieH:Person {name:'Bonnie Hunt', born:1961})
 CREATE (ReginaK:Person {name:'Regina King', born:1971})
 CREATE (JonathanL:Person {name:'Jonathan Lipnicki', born:1990})
 CREATE (CameronC:Person {name:'Cameron Crowe', born:1957})
+CREATE (CubaG:Person {name:'Cuba Gooding Jr.', born:1968})
 CREATE
   (TomC)-[:ACTED_IN {roles:['Jerry Maguire']}]->(JerryMaguire),
   (CubaG)-[:ACTED_IN {roles:['Rod Tidwell']}]->(JerryMaguire),
@@ -328,6 +330,8 @@ CREATE
 
 CREATE (TheBirdcage:Movie {title:'The Birdcage', released:1996, tagline:'Come as you are'})
 CREATE (MikeN:Person {name:'Mike Nichols', born:1931})
+CREATE (Nathan:Person {name:'Nathan Lane', born:1956})
+CREATE (Robin:Person {name:'Robin Williams', born:1951})
 CREATE
   (Robin)-[:ACTED_IN {roles:['Armand Goldman']}]->(TheBirdcage),
   (Nathan)-[:ACTED_IN {roles:['Albert Goldman']}]->(TheBirdcage),
@@ -344,6 +348,7 @@ CREATE
   (ClintE)-[:DIRECTED]->(Unforgiven)
 
 CREATE (CloudAtlas:Movie {title:'Cloud Atlas', released:2012, tagline:'Everything is connected'})
+CREATE (TomH:Person {name:'Tom Hanks', born:1956})
 CREATE (HalleB:Person {name:'Halle Berry', born:1966})
 CREATE (JimB:Person {name:'Jim Broadbent', born:1949})
 CREATE (TomT:Person {name:'Tom Tykwer', born:1965})

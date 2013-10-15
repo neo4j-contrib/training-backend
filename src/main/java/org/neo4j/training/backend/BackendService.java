@@ -64,7 +64,7 @@ public class BackendService {
     public Map<String, Object> execute(Neo4jService service, String init, String query, String version) {
         if (version!=null) service.setVersion(version);
         boolean initial = init != null;
-        if (dontInitialize(service) || init==null || init.equalsIgnoreCase("none")) init=null;
+        if (dontInitialize(service) || init==null || init.equalsIgnoreCase("none") || service.isInitialized() || !service.isEmpty()) init=null;
         if ("none".equalsIgnoreCase(query)) query=null;
         final Map<String, Object> data = map("init", init, "query", query,"version",service.getVersion());
         long start = System.currentTimeMillis(), time = start;

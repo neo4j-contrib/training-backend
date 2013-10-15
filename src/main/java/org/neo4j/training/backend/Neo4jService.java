@@ -1,7 +1,9 @@
 package org.neo4j.training.backend;
 
 import org.neo4j.graphdb.*;
+import org.neo4j.helpers.collection.IteratorUtil;
 import org.neo4j.test.ImpermanentGraphDatabase;
+import org.neo4j.tooling.GlobalGraphOperations;
 import org.slf4j.Logger;
 
 import java.util.*;
@@ -226,6 +228,11 @@ class Neo4jService {
 
     public Collection<String> getHistory() {
         return history;
+    }
+
+    public boolean isEmpty() {
+        boolean refNode = hasReferenceNode();
+        return IteratorUtil.count(GlobalGraphOperations.at(gdb).getAllNodes()) <= (refNode ? 1 : 0);
     }
 
     public interface ShutdownHook {

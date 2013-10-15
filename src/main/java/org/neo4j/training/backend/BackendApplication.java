@@ -72,9 +72,8 @@ public class BackendApplication implements SparkApplication {
         delete(new Route("/backend/graph/:id") {
             protected Object doHandle(Request request, Response response, Neo4jService service) {
                 String id = request.params("id");
-                boolean result = backendService.delete(id);
                 SessionService.cleanSession(id);
-                return result;
+                return backendService.delete(id);
             }
         });
         post( new Route( "/backend/version" )

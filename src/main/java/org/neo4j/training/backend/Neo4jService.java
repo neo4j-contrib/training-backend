@@ -158,7 +158,14 @@ class Neo4jService {
 
     public boolean hasReferenceNode() {
         try {
-            return gdb.getReferenceNode() != null;
+            Transaction tx = gdb.beginTx();
+            try {
+                boolean result = gdb.getReferenceNode() != null;
+                tx.success();
+                return result;
+            } finally {
+                tx.finish();
+            }
         } catch (NotFoundException nfe) {
             return false;
         }
@@ -232,7 +239,15 @@ class Neo4jService {
 
     public boolean isEmpty() {
         boolean refNode = hasReferenceNode();
-        return IteratorUtil.count(GlobalGraphOperations.at(gdb).getAllNodes()) <= (refNode ? 1 : 0);
+        Transaction tx = gdb.beginTx();
+        try {
+            int count = IteratorUtil.count(GlobalGraphOperations.at(gdb).getAllNodes());
+            int emptyCount = refNode ? 1 : 0;
+            tx.success();
+            return emptyCount >= count;
+        } finally {
+            tx.finish();
+        }
     }
 
     public interface ShutdownHook {

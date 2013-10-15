@@ -158,6 +158,7 @@ class Neo4jService {
 
     public boolean hasReferenceNode() {
         try {
+            if (gdb==null) return false;
             Transaction tx = gdb.beginTx();
             try {
                 boolean result = gdb.getReferenceNode() != null;
@@ -238,6 +239,7 @@ class Neo4jService {
     }
 
     public boolean isEmpty() {
+        if (gdb==null) return true;
         boolean refNode = hasReferenceNode();
         Transaction tx = gdb.beginTx();
         try {

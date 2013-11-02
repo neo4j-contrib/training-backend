@@ -3,6 +3,7 @@ package org.neo4j.training.backend;
 import org.neo4j.graphdb.*;
 import org.neo4j.tooling.GlobalGraphOperations;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 import static java.util.Arrays.asList;
@@ -163,39 +164,80 @@ public class SubGraph {
         return result;
     }
 
-    public SubGraph markSelection(CypherQueryExecutor.CypherResult result) {
+    public SubGraph markSelection(CypherQueryExecutor.CypherResult result, boolean markSimpleValues) {
         if (result==null) return this;
         for (Map<String, Object> row : result) {
             for (Map.Entry<String, Object> entry : row.entrySet()) {
-                markEntry(entry);
+                markEntry(entry, markSimpleValues);
             }
         }
         return this;
     }
 
-    private void markEntry(Map.Entry<String, Object> entry) {
+    private void markEntry(Map.Entry<String, Object> entry, boolean markSimpleValues) {
         String column = entry.getKey();
         Object value = entry.getValue();
+        if (value==null) return;
         if (value instanceof Iterable) {
-	        for (Object inner : (Iterable)value) {
-                markNodeOrRel(column,inner);
+	        for (Object elementValue : (Iterable)value) {
+                markNodeOrRel(column,elementValue,markSimpleValues);
+            }
+        } else if (value.getClass().isArray()) {
+            for (int i= Array.getLength(value);i>=0;i--) {
+                Object elementValue = Array.get(value,i);
+                markNodeOrRel(column, elementValue, markSimpleValues);
             }
         } else {
-            markNodeOrRel(column, value);
+            markNodeOrRel(column, value,markSimpleValues);
         }
     }
 
-    private void markNodeOrRel(String column, Object value) {
+    private void markNodeOrRel(String column, Object value, boolean markSimpleValues) {
+        if (value == null) return;
         if (value instanceof Node) {
             final long id = ((Node) value).getId();
             if (!nodes.containsKey(id)) return;
             nodes.get(id).put("selected", column);
+            return;
         }
         if (value instanceof Relationship) {
             final long id = ((Relationship) value).getId();
             if (!relationships.containsKey(id)) return;
             relationships.get(id).put("selected", column);
+            return;
         }
+        if (markSimpleValues) {
+            markSimpleValueInGraphData(column, value, nodes);
+            markSimpleValueInGraphData(column, value, relationships);
+        }
+    }
+
+    private void markSimpleValueInGraphData(String column, Object value, SortedMap<Long, Map<String, Object>> graphData) {
+        for (Map.Entry<Long, Map<String, Object>> entry : graphData.entrySet()) {
+            for (Map.Entry<String, Object> nodeEntry : entry.getValue().entrySet()) {
+                Object nodeValue = nodeEntry.getValue();
+                if (equals(value, nodeValue)) {
+                    entry.getValue().put("selected",column);
+                    break;
+                }
+            }
+        }
+    }
+
+    private boolean equals(Object value, Object nodeValue) {
+        if (nodeValue==null) return false;
+        if (value.equals(nodeValue)) return true;
+        if (nodeValue instanceof Iterable) {
+            for (Object o : ((Iterable) nodeValue)) {
+                if (value.equals(o)) return true;
+            }
+        }
+        if (nodeValue.getClass().isArray()) {
+            for (int i= Array.getLength(nodeValue);i>=0;i--) {
+                if (value.equals(Array.get(nodeValue,i))) return true;
+            }
+        }
+        return false;
     }
 
     @SuppressWarnings("unchecked")

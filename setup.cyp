@@ -20,6 +20,7 @@
 }
 
 
+
 database "lesson1"
 for simple intro type queries
 
@@ -31,11 +32,13 @@ CREATE (Hugo:Person {name:'Hugo Weaving', born:1960})
 CREATE (AndyW:Person {name:'Andy Wachowski', born:1967})
 CREATE (LanaW:Person {name:'Lana Wachowski', born:1965})
 CREATE (JoelS:Person {name:'Joel Silver', born:1952})
+CREATE (Emil:Person {name:'Emil Eifrem', born:1974})
 CREATE
   (Keanu)-[:ACTED_IN {roles:['Neo']}]->(TheMatrix),
   (Carrie)-[:ACTED_IN {roles:['Trinity']}]->(TheMatrix),
   (Laurence)-[:ACTED_IN {roles:['Morpheus']}]->(TheMatrix),
   (Hugo)-[:ACTED_IN {roles:['Agent Smith']}]->(TheMatrix),
+  (Emil)-[:ACTED_IN {roles:['Emil']}]->(TheMatrix),
   (AndyW)-[:DIRECTED]->(TheMatrix),
   (LanaW)-[:DIRECTED]->(TheMatrix),
   (JoelS)-[:PRODUCED]->(TheMatrix)
@@ -54,6 +57,10 @@ CREATE
   (AndyW)-[:DIRECTED]->(CloudAtlas),
   (LanaW)-[:DIRECTED]->(CloudAtlas)
 
+
+mystic-river = lesson1 +
+
+CREATE (m:Movie {title: 'Mystic River',tagline:'We bury our sins here, Dave. We wash them clean.',released:2003})
 
 tasks
 
@@ -193,6 +200,106 @@ Lab-Session 5 busiest actors
 }
 
 
+{
+  "message": "Lab: All Movies Tom Hanks acted in.",
+  "tasks": [
+    {
+      "check": "input",
+      "test": ":Person",
+      "failMsg": "You'll want to limit your nodes to ones labeled Person"
+    },
+    {
+      "check": "input",
+      "test": ":ACTED_IN",
+      "failMsg": "Your paths should use the ACTED_IN relationship"
+    },
+    {
+      "check": "input",
+      "test": "\\.name",
+      "failMsg": "You probably want to check the name property"
+    },
+    {
+      "check": "input",
+      "test": "Tom Hanks",
+      "failMsg": "You wanted to look for Tom Hank's movies"
+    },
+    {
+      "check": "output",
+      "results": "Cloud Atlas",
+      "failMsg": "We expected some other movie."
+    }
+  ]
+}
+
+{
+  "message": "Lab: All Movies Keanu Reeves acted in.",
+  "tasks": [
+    {
+      "check": "input",
+      "test": ":Person",
+      "failMsg": "You'll want to limit your nodes to ones labeled Person"
+    },
+    {
+      "check": "input",
+      "test": ":ACTED_IN",
+      "failMsg": "Your paths should use the ACTED_IN relationship"
+    },
+    {
+      "check": "input",
+      "test": "\\.name",
+      "failMsg": "You probably want to check the name property"
+    },
+    {
+      "check": "input",
+      "test": "Keanu Reeves",
+      "failMsg": "You wanted to look for Keanu Reeves's movies"
+    },
+    {
+      "check": "output",
+      "results": "The Matrix",
+      "failMsg": "We expected some otherher movie."
+    }
+  ]
+}
+
+
+
+{
+  "message": "All the actors who acted with Tom Hanks and are older than him.",
+  "tasks": [
+    {
+      "check": "input",
+      "test": ":Person",
+      "failMsg": "You'll want to limit your nodes to ones labeled Person"
+    },
+    {
+      "check": "input",
+      "test": ":ACTED_IN",
+      "failMsg": "Your paths should use the ACTED_IN relationship"
+    },
+    {
+      "check": "input",
+      "test": "\\.name",
+      "failMsg": "You probably want to check the name property"
+    },
+    {
+      "check": "input",
+      "test": "Tom Hanks",
+      "failMsg": "You wanted to look for Tom Hanks's colleagues"
+    },
+    {
+      "check": "input",
+      "test": "\\.born [<>]",
+      "failMsg": "Compare the born (year) property"
+    },
+    {
+      "check": "output",
+      "results": "Jim Broadbent",
+      "failMsg": "We expected someone else."
+    }
+  ]
+}
+
 ##Recommend 3 actors that Keanu Reeves should work with (but hasn’t).##
 
 This is kind of a *friends-of-a-friend* query, only that we don't have `FRIEND` relationships here but co-acting in a movie (`ACTS_IN`). So it might be a bit verbose in the first place. There are different approaches for the recommendation. So keep in mind that the top 3 most frequently appearing people in that network seem to be good candidates.
@@ -244,15 +351,80 @@ LIMIT 3
       "check": "input",
       "test": "not",
       "failMsg": "Did you remember to exclude the ones he already worked with?"
-    },
-    {
-      "check": "results",
-      "results": "(Meg Ryan|Val Kilmer)",
-      "failMsg": "We expected someone else."
     }
   ]
 }
 
+,
+{
+  "check": "results",
+  "results": "(Meg Ryan|Val Kilmer)",
+  "failMsg": "We expected someone else."
+}
+
+
+
+{
+  "message": "Lab: All Characters in the Matrix",
+  "tasks": [
+    {
+      "check": "input",
+      "test": ":Movie",
+      "failMsg": "You'll want to limit your nodes to ones labeled Movie"
+    },
+    {
+      "check": "input",
+      "test": "\\.title",
+      "failMsg": "You probably want to check the title property"
+    },
+    {
+      "check": "input",
+      "test": "The Matrix",
+      "failMsg": "You wanted to look for the movie titled 'The Matrix'"
+    },
+    {
+      "check": "input",
+      "test": ":ACTED_IN",
+      "failMsg": "Your paths should use the ACTED_IN relationship"
+    },
+    {
+      "check": "input",
+      "test": "\\w+:ACTED_IN",
+      "failMsg": "You probably wanted to assign an identifier to your relationship"
+    },
+    {
+      "check": "input",
+      "test": "\\.roles",
+      "failMsg": "You wanted to RETURN the roles property of the relationship"
+    },
+    {
+      "check": "output",
+      "results": "Neo",
+      "failMsg": "We expected some other characters"
+    }
+  ]
+}
+
+{
+  "message": "Aggregation",
+  "tasks": [
+    {
+      "check": "input",
+      "test": ":Person",
+      "failMsg": "You'll want to start at nodes labeled Person"
+    },
+    {
+      "check": "input",
+      "test": ":ACTED_IN",
+      "failMsg": "Your paths should use the ACTED_IN relationship"
+    },
+    {
+      "check": "input",
+      "test": "(collect|count|avg|min|max)",
+      "failMsg": "You certainly wanted to use an aggregation function"
+    }
+  ]
+}
 
 CREATE (TheMatrix:Movie {title:'The Matrix', released:1999, tagline:'Welcome to the Real World'})
 CREATE (Keanu:Person {name:'Keanu Reeves', born:1964})
@@ -360,3 +532,45 @@ CREATE
   (TomT)-[:DIRECTED]->(CloudAtlas),
   (AndyW)-[:DIRECTED]->(CloudAtlas),
   (LanaW)-[:DIRECTED]->(CloudAtlas)
+
+CREATE (AFewGoodMen:Movie {title:'A Few Good Men', released:1992, tagline:'In the heart of the nation\\'s capital, in a courthouse of the U.S. government, one man will stop at nothing to keep his honor, and one will stop at nothing to find the truth.'})
+CREATE (JackN:Person {name:'Jack Nicholson', born:1937})
+CREATE (DemiM:Person {name:'Demi Moore', born:1962})
+CREATE (KevinB:Person {name:'Kevin Bacon', born:1958})
+CREATE (KieferS:Person {name:'Kiefer Sutherland', born:1966})
+CREATE (NoahW:Person {name:'Noah Wyle', born:1971})
+CREATE (KevinP:Person {name:'Kevin Pollak', born:1957})
+CREATE (JTW:Person {name:'J.T. Walsh', born:1943})
+CREATE (JamesM:Person {name:'James Marshall', born:1967})
+CREATE (ChristopherG:Person {name:'Christopher Guest', born:1948})
+CREATE (RobR:Person {name:'Rob Reiner', born:1947})
+CREATE (AaronS:Person {name:'Aaron Sorkin', born:1961})
+CREATE
+  (TomC)-[:ACTED_IN {roles:['Lt. Daniel Kaffee']}]->(AFewGoodMen),
+  (JackN)-[:ACTED_IN {roles:['Col. Nathan R. Jessup']}]->(AFewGoodMen),
+  (DemiM)-[:ACTED_IN {roles:['Lt. Cdr. JoAnne Galloway']}]->(AFewGoodMen),
+  (KevinB)-[:ACTED_IN {roles:['Capt. Jack Ross']}]->(AFewGoodMen),
+  (KieferS)-[:ACTED_IN {roles:['Lt. Jonathan Kendrick']}]->(AFewGoodMen),
+  (NoahW)-[:ACTED_IN {roles:['Cpl. Jeffrey Barnes']}]->(AFewGoodMen),
+  (CubaG)-[:ACTED_IN {roles:['Cpl. Carl Hammaker']}]->(AFewGoodMen),
+  (KevinP)-[:ACTED_IN {roles:['Lt. Sam Weinberg']}]->(AFewGoodMen),
+  (JTW)-[:ACTED_IN {roles:['Lt. Col. Matthew Andrew Markinson']}]->(AFewGoodMen),
+  (JamesM)-[:ACTED_IN {roles:['Pfc. Louden Downey']}]->(AFewGoodMen),
+  (ChristopherG)-[:ACTED_IN {roles:['Dr. Stone']}]->(AFewGoodMen),
+  (AaronS)-[:ACTED_IN {roles:['Man in Bar']}]->(AFewGoodMen),
+  (RobR)-[:DIRECTED]->(AFewGoodMen),
+  (AaronS)-[:WROTE]->(AFewGoodMen)
+
+CREATE (Apollo13:Movie {title:'Apollo 13', released:1995, tagline:'Houston, we have a problem.'})
+CREATE (EdH:Person {name:'Ed Harris', born:1950})
+CREATE (BillPax:Person {name:'Bill Paxton', born:1955})
+CREATE (RonH:Person {name:'Ron Howard', born:1954})
+CREATE (GaryS:Person {name:'Gary Sinise', born:1955})
+CREATE
+  (TomH)-[:ACTED_IN {roles:['Jim Lovell']}]->(Apollo13),
+  (KevinB)-[:ACTED_IN {roles:['Jack Swigert']}]->(Apollo13),
+  (EdH)-[:ACTED_IN {roles:['Gene Kranz']}]->(Apollo13),
+  (BillPax)-[:ACTED_IN {roles:['Fred Haise']}]->(Apollo13),
+  (GaryS)-[:ACTED_IN {roles:['Ken Mattingly']}]->(Apollo13),
+  (RonH)-[:DIRECTED]->(Apollo13)
+

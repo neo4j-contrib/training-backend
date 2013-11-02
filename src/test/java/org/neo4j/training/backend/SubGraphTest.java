@@ -4,11 +4,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphalgo.impl.util.PathImpl;
-import org.neo4j.graphdb.DynamicRelationshipType;
-import org.neo4j.graphdb.Label;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Path;
-import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.*;
 import org.neo4j.helpers.collection.IteratorUtil;
 import org.neo4j.test.ImpermanentGraphDatabase;
 
@@ -166,6 +162,7 @@ public class SubGraphTest {
         return "http://host:7474/db/data/node/" + id;
     }
 
+
     @Test
     public void testMarkRelationshipsFromVariableLength() throws Exception {
         final Node n1 = gdb.createNode();
@@ -174,13 +171,38 @@ public class SubGraphTest {
         final SubGraph graph = SubGraph.from(gdb);
         final CypherQueryExecutor executor = new CypherQueryExecutor(gdb, null);
         final CypherQueryExecutor.CypherResult result = executor.cypherQuery("start n=node(0) match n-[r*]-() return n,r", null);
-        graph.markSelection(result);
+        graph.markSelection(result, false);
         final Map<String, Object> nodeData = graph.getNodes().get(n0.getId());
         System.out.println("nodeData = " + nodeData);
         assertEquals(true, nodeData.containsKey("selected"));
         final Map<String, Object> relData = graph.getRelationships().get(relationship.getId());
         System.out.println("relData = " + relData);
         assertEquals(true, relData.containsKey("selected"));
+    }
+
+    @Test
+    public void testMarkFromSimpleValues() throws Exception {
+        final Node n0 = gdb.createNode(DynamicLabel.label("Label1"));
+        final Node n1 = gdb.createNode(DynamicLabel.label("Label2"));
+        final Relationship relationship = n0.createRelationshipTo(n1, DynamicRelationshipType.withName("REL"));
+        relationship.setProperty("type","rel");
+        n0.setProperty("name","foo");
+        n1.setProperty("name","bar");
+        final SubGraph graph = SubGraph.from(gdb);
+        final CypherQueryExecutor executor = new CypherQueryExecutor(gdb, null);
+        final CypherQueryExecutor.CypherResult result = executor.cypherQuery("match n-[r:REL]->(m) where n.name = 'foo' return n.name, type(r), labels(m)", null);
+        graph.markSelection(result, true);
+        final Map<String, Object> nodeData = graph.getNodes().get(n0.getId());
+        System.out.println("nodeData = " + nodeData);
+        assertEquals("n.name", nodeData.get("selected"));
+
+        final Map<String, Object> nodeData1 = graph.getNodes().get(n1.getId());
+        System.out.println("nodeData = " + nodeData1);
+        assertEquals("labels(m)", nodeData1.get("selected"));
+
+        final Map<String, Object> relData = graph.getRelationships().get(relationship.getId());
+        System.out.println("relData = " + relData);
+        assertEquals("type(r)", relData.get("selected"));
     }
 
     @Test

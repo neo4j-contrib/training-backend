@@ -34,7 +34,8 @@ public class BackendService {
         final String restUrl = System.getenv("NEO4J_URL");
         RestAPI api = createRestApi(restUrl);
         GraphStorage storage = null;
-        if (api!=null) storage = new GraphStorage(api);
+        if (api!=null) storage = new Neo4jGraphStorage(api);
+        else storage = new InMemoryStorage();
         log("Graph Storage " + restUrl + "storage" + storage);
         return storage;
     }

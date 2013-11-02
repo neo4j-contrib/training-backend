@@ -41,7 +41,7 @@ public class Neo4jServiceTest {
 
     @Test
     public void testRunsNoShutdownHookWithoutChange() throws Throwable {
-        final GraphStorage storage = Mockito.mock(GraphStorage.class);
+        final GraphStorage storage = Mockito.mock(Neo4jGraphStorage.class);
         BackendService service = new BackendService() {
             @Override
             protected GraphStorage createGraphStorage() {
@@ -57,7 +57,7 @@ public class Neo4jServiceTest {
 
     @Test
     public void testRunsShutdownHookWithChange() throws Throwable {
-        final GraphStorage storage = Mockito.mock(GraphStorage.class);
+        final GraphStorage storage = Mockito.mock(Neo4jGraphStorage.class);
         BackendService service = new BackendService() {
             @Override
             protected GraphStorage createGraphStorage() {

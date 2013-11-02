@@ -22,7 +22,7 @@ public class BackendServiceTest {
     }
     @Test
     public void testSaveCreate() throws Exception {
-        final GraphStorage storage = Mockito.mock(GraphStorage.class);
+        final GraphStorage storage = Mockito.mock(Neo4jGraphStorage.class);
         final BackendService service = new BackendService() {
             @Override
             protected GraphStorage createGraphStorage() {
@@ -37,7 +37,7 @@ public class BackendServiceTest {
 
     @Test
     public void testSaveCreateUpdate() throws Exception {
-        final GraphStorage storage = Mockito.mock(GraphStorage.class);
+        final GraphStorage storage = Mockito.mock(Neo4jGraphStorage.class);
         Mockito.when(storage.find(Mockito.eq(ID))).thenReturn(new GraphInfo(ID, INIT,null,null));
         final BackendService service = new BackendService() {
             @Override

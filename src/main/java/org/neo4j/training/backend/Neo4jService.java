@@ -66,7 +66,7 @@ class Neo4jService {
     public Map cypherQueryViz(CypherQueryExecutor.CypherResult result) {
         Transaction tx = gdb.beginTx();
         try {
-            final SubGraph subGraph = SubGraph.from(gdb).markSelection(result);
+            final SubGraph subGraph = SubGraph.from(gdb).markSelection(result, true);
             return map("nodes", subGraph.getNodes().values(), "links", subGraph.getRelationshipsWithIndexedEnds().values());
         } finally {
             tx.success();

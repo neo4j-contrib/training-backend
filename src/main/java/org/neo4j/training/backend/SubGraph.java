@@ -215,6 +215,8 @@ public class SubGraph {
     private void markSimpleValueInGraphData(String column, Object value, SortedMap<Long, Map<String, Object>> graphData) {
         for (Map.Entry<Long, Map<String, Object>> entry : graphData.entrySet()) {
             for (Map.Entry<String, Object> nodeEntry : entry.getValue().entrySet()) {
+                String key = nodeEntry.getKey();
+                if (key.matches("id|start|end|target|source")) continue;
                 Object nodeValue = nodeEntry.getValue();
                 if (equals(value, nodeValue)) {
                     entry.getValue().put("selected",column);

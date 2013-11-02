@@ -183,26 +183,29 @@ public class SubGraphTest {
     @Test
     public void testMarkFromSimpleValues() throws Exception {
         final Node n0 = gdb.createNode(DynamicLabel.label("Label1"));
-        final Node n1 = gdb.createNode(DynamicLabel.label("Label2"));
-        final Relationship relationship = n0.createRelationshipTo(n1, DynamicRelationshipType.withName("REL"));
-        relationship.setProperty("type","rel");
         n0.setProperty("name","foo");
+        final Node n1 = gdb.createNode(DynamicLabel.label("Label2"));
         n1.setProperty("name","bar");
+        final Node n2 = gdb.createNode(DynamicLabel.label("Label3"));
+        n2.setProperty("age",n0.getId());
+        final Relationship relationship = n0.createRelationshipTo(n1, DynamicRelationshipType.withName("REL"));
+        relationship.setProperty("since",2011);
+        final Relationship relationship2 = n1.createRelationshipTo(n2, DynamicRelationshipType.withName("REL2"));
         final SubGraph graph = SubGraph.from(gdb);
         final CypherQueryExecutor executor = new CypherQueryExecutor(gdb, null);
-        final CypherQueryExecutor.CypherResult result = executor.cypherQuery("match n-[r:REL]->(m) where n.name = 'foo' return n.name, type(r), labels(m)", null);
+        final CypherQueryExecutor.CypherResult result = executor.cypherQuery("match n-[r:REL]->(m)-[r2:REL2]->(o) where n.name = 'foo' return n.name, r.since, labels(m), type(r2),o.age", null);
         graph.markSelection(result, true);
-        final Map<String, Object> nodeData = graph.getNodes().get(n0.getId());
+        assertSelected("n.name", graph.getNodes(), n0.getId());
+        assertSelected("r.since", graph.getRelationships(), relationship.getId());
+        assertSelected("labels(m)", graph.getNodes(), n1.getId());
+        assertSelected("type(r2)", graph.getRelationships(), relationship2.getId());
+        assertSelected("o.age", graph.getNodes(), n2.getId());
+    }
+
+    private void assertSelected(String column, Map<Long, Map<String, Object>> graphData, long id) {
+        final Map<String, Object> nodeData = graphData.get(id);
         System.out.println("nodeData = " + nodeData);
-        assertEquals("n.name", nodeData.get("selected"));
-
-        final Map<String, Object> nodeData1 = graph.getNodes().get(n1.getId());
-        System.out.println("nodeData = " + nodeData1);
-        assertEquals("labels(m)", nodeData1.get("selected"));
-
-        final Map<String, Object> relData = graph.getRelationships().get(relationship.getId());
-        System.out.println("relData = " + relData);
-        assertEquals("type(r)", relData.get("selected"));
+        assertEquals(column, nodeData.get("selected"));
     }
 
     @Test

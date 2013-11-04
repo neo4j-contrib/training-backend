@@ -22,7 +22,7 @@ import static org.neo4j.training.backend.Util.join;
 */
 public class BackendService {
 
-    private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(BackendService.class);
+    private static final Logger LOG = org.slf4j.LoggerFactory.getLogger("spark.BackendService");
 
     private final GraphStorage storage;
 
@@ -36,7 +36,7 @@ public class BackendService {
         GraphStorage storage = null;
         if (api!=null) storage = new Neo4jGraphStorage(api);
         else storage = new InMemoryStorage();
-        log("Graph Storage " + restUrl + "storage" + storage);
+        LOG.debug("Graph Storage " + restUrl + "storage" + storage);
         return storage;
     }
 
@@ -56,10 +56,6 @@ public class BackendService {
             LOG.error("Invalid storage url "+restUrl,e);
             return null;
         }
-    }
-
-    private void log(String msg) {
-        LOG.warn(msg);
     }
 
     public Map<String, Object> execute(Neo4jService service, String init, String query, String version) {
@@ -89,6 +85,7 @@ public class BackendService {
             }
             time = trace("cypher", time);
             data.put("visualization", service.cypherQueryViz(result));
+
             trace("viz", time);
         } catch (Exception e) {
             LOG.error("Error executing init: "+init+" query: "+query,e);
@@ -105,7 +102,7 @@ public class BackendService {
 
     protected long trace(String msg, long time) {
         long now = System.currentTimeMillis();
-        log("## " + msg + " took: " + (now - time) + " ms.");
+        LOG.debug("## " + msg + " took: " + (now - time) + " ms.");
         return now;
     }
 
@@ -136,7 +133,7 @@ public class BackendService {
         if (data == null || data.isEmpty()) {
             data = defaultValue;
         } else {
-            log(param+": "+data);
+            LOG.debug(param + ": " + data);
         }
         return data;
     }
@@ -221,7 +218,7 @@ public class BackendService {
                 return true;
             }
         } catch(Exception e) {
-            log(e.getMessage());
+            LOG.warn(e.getMessage());
         }
         return false;
     }

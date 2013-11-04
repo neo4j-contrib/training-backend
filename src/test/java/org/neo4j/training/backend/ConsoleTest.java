@@ -2,6 +2,7 @@ package org.neo4j.training.backend;
 
 import org.junit.Ignore;
 import org.neo4j.test.ImpermanentGraphDatabase;
+import org.neo4j.test.TestGraphDatabaseFactory;
 
 /**
  * @author mh
@@ -10,7 +11,7 @@ import org.neo4j.test.ImpermanentGraphDatabase;
 @Ignore
 public class ConsoleTest {
     public static void main(String[] args) throws Exception {
-        final Backend backend = new Backend(DatabaseInfo.expose(new ImpermanentGraphDatabase()));
+        final Backend backend = new Backend(DatabaseInfo.expose(new TestGraphDatabaseFactory().newImpermanentDatabase()));
         backend.start(9000);
         backend.join();
     }

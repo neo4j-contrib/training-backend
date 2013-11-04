@@ -68,6 +68,9 @@ class Neo4jService {
         try {
             final SubGraph subGraph = SubGraph.from(gdb).markSelection(result, true);
             return map("nodes", subGraph.getNodes().values(), "links", subGraph.getRelationshipsWithIndexedEnds().values());
+        } catch(Exception e) {
+            LOG.error("Error during cypherQueryViz",e);
+            throw e;
         } finally {
             tx.success();
             tx.finish();
@@ -108,7 +111,7 @@ class Neo4jService {
 
     private void shutdownDb() {
         if (gdb == null) return;
-        LOG.warn("Shutting down service "+this);
+        LOG.info("Shutting down service "+this);
         if (ownsDatabase) gdb.shutdown();
         index = null;
         cypherQueryExecutor=null;

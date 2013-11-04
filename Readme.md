@@ -1,6 +1,6 @@
 # Neo4j Training Backend
     
-Heroku App: http://neo4j-training-backend.herokuapp.com
+Heroku App:  http://neo4j-training-backend.herokuapp.com
 
 
 ### Usage:

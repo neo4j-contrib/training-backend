@@ -18,7 +18,7 @@ import com.google.gson.Gson;
 
 public class BackendApplication implements SparkApplication {
 
-    private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(BackendApplication.class);
+    private static final Logger LOG = org.slf4j.LoggerFactory.getLogger("spark.BackendApplication"); //TODO
 
     private BackendService backendService;
 
@@ -40,7 +40,9 @@ public class BackendApplication implements SparkApplication {
                 if (query!=null && !query.isEmpty()) {
                     LOG.warn( "cypher: "+query );
                 }
-                return gson().toJson(backendService.execute(service, null, query, null));
+                String result = gson().toJson(backendService.execute(service, null, query, null));
+                LOG.info(result);
+                return result;
             }
         });
         post(new Route("/backend/cypher/:id") {
@@ -58,7 +60,9 @@ public class BackendApplication implements SparkApplication {
                 } else {
                     query = "none";
                 }
-                return gson().toJson(backendService.execute(service, null, query, null));
+                String result = gson().toJson(backendService.execute(service, null, query, null));
+//                LOG.debug(result);
+                return result;
             }
         });
         post(new Route("/backend/graph/:id") {

@@ -235,7 +235,7 @@ public class SubGraph {
             }
         }
         if (nodeValue.getClass().isArray()) {
-            for (int i= Array.getLength(nodeValue);i>=0;i--) {
+            for (int i=Array.getLength(nodeValue)-1;i>=0;i--) {
                 if (value.equals(Array.get(nodeValue,i))) return true;
             }
         }

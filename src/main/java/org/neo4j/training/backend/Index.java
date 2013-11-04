@@ -37,7 +37,7 @@ public class Index {
         if (properties == null) return;
         for (String prop : properties) {
             if (autoIndexedProperties.contains(prop)) continue;
-            LOG.warn("Auto-Indexing " + prop);
+            LOG.debug("Auto-Indexing " + prop);
             autoIndexedProperties.add(prop);
             nodeAutoIndexer.startAutoIndexingProperty(prop);
             relationshipAutoIndexer.startAutoIndexingProperty(prop);

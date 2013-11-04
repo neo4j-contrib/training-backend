@@ -150,7 +150,8 @@ public class BackendService {
     }
 
     Map<String, Object> init(final Neo4jService service, String id, final String session) {
-        GraphInfo info = findForSessionOrId(id, session);
+//        GraphInfo info = findForSessionOrId(id, session);
+        GraphInfo info = storage.find(id);
         final Map<String, Object> result;
         if (info!=null) {
             result = execute(service, info.getInit(), info.getQuery(), info.getVersion());
@@ -160,7 +161,7 @@ public class BackendService {
             result = execute(service, GraphInfo.from(map()));
             result.put("error","Graph not found for id " + id+ " rendering default");
         }
-        service.setShutdownHook(createShutdownHook(service, session));
+//        service.setShutdownHook(createShutdownHook(service, session));
         return result;
     }
 

@@ -1,5 +1,6 @@
 package org.neo4j.training.backend;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.neo4j.rest.graphdb.RestAPI;
@@ -15,6 +16,7 @@ public class BackendServiceTest {
     public static final String INIT = "bar";
 
     @Test
+    @Ignore("always has a storage now")
     public void testSaveNoStorage() throws Exception {
         BackendService service = new BackendService();
         Map<String,Object> result = service.save(ID, INIT);

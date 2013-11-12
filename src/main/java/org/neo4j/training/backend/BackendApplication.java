@@ -61,7 +61,7 @@ public class BackendApplication implements SparkApplication {
                     query = "none";
                 }
                 String result = gson().toJson(backendService.execute(service, null, query, null));
-//                LOG.debug(result);
+//                LOG.debug (result);
                 return result;
             }
         });

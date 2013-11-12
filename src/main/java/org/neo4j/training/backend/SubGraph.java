@@ -183,7 +183,7 @@ public class SubGraph {
                 markNodeOrRel(column,elementValue,markSimpleValues);
             }
         } else if (value.getClass().isArray()) {
-            for (int i= Array.getLength(value);i>=0;i--) {
+            for (int i= Array.getLength(value)-1;i>=0;i--) {
                 Object elementValue = Array.get(value,i);
                 markNodeOrRel(column, elementValue, markSimpleValues);
             }

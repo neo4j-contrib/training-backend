@@ -35,7 +35,7 @@ public class Neo4jGraphStorage implements GraphStorage {
     @Override
     public GraphInfo find(String id) {
         if (id==null) return null;
-        return cypher.query("CYPHER 1.8 start n=node:graphs(id={id}) set n.count = coalesce(n.count?,0)+1, n.time={time} return n", map("id", id,"time",System.currentTimeMillis())).to(GraphInfo.class, new ResultConverter<Map<String, Object>, GraphInfo>() {
+        return cypher.query("MATCH (n:Graph {id :{id}}) set n.count = coalesce(n.count,0)+1, n.time={time} return n", map("id", id,"time",System.currentTimeMillis())).to(GraphInfo.class, new ResultConverter<Map<String, Object>, GraphInfo>() {
             @Override
             public GraphInfo convert(Map<String, Object> row, Class<GraphInfo> type) {
                 if (row==null || row.get("n")==null) return null;
@@ -46,14 +46,14 @@ public class Neo4jGraphStorage implements GraphStorage {
 
     @Override
     public void update(GraphInfo info) {
-        cypher.query("start n=node:graphs(id={id}) where not(n is null) set n.query=coalesce({query},'none'), n.init=coalesce({init},'none'), n.message=coalesce({message},'none'),n.history=coalesce({history},'')", info.toMap());
+        cypher.query("MATCH (n:Graph {id :{id}}) where not(n is null) set n.query=coalesce({query},'none'), n.init=coalesce({init},'none'), n.message=coalesce({message},'none'),n.history=coalesce({history},'')", info.toMap());
     }
 
     @Override
     public GraphInfo create(GraphInfo info) {
         if (isEmpty(info)) info = info.withId(Util.randomId());
-        final RestNode node = restAPI.getOrCreateNode(index, "id", info.getId(), info.toMap());
-        return new GraphInfo(node);
+        Map result = cypher.query("MERGE (n:Graph {id :{id}}) set n = {props}", map("id", info.getId(),"props",info.toMap())).to(Map.class).singleOrNull();
+        return new GraphInfo(result);
     }
 
     private boolean isEmpty(GraphInfo info) {
@@ -62,6 +62,6 @@ public class Neo4jGraphStorage implements GraphStorage {
 
     @Override
     public void delete(String id) {
-        cypher.query("start n=node:graphs(id={id}) delete n", map("id", id));
+        cypher.query("MATCH (n:Graph {id :{id}}) delete n", map("id", id));
     }
 }

@@ -18,6 +18,16 @@ public class GraphInfo {
     private final boolean noRoot;
     private String history;
 
+
+    public GraphInfo(Map map) {
+        this.id = (String) map.get("id");
+        this.init = (String) map.get("init");
+        this.query = (String) map.get("query");
+        this.message = (String) map.get("message");
+        this.version = (String) map.get("version");
+        this.history = (String) map.get("history");
+        this.noRoot = (Boolean) map.get("no_root");
+    }
     public GraphInfo(Node node) {
         this.id = (String) node.getProperty("id");
         this.init = (String) node.getProperty("init",null);
@@ -47,6 +57,7 @@ public class GraphInfo {
         this.noRoot = noRoot;
         this.history = history;
     }
+
 
     public Map<String,Object> toMap() {
         final HashMap<String, Object> result = new HashMap<String, Object>();

@@ -11,6 +11,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.test.ImpermanentGraphDatabase;
+import org.neo4j.test.TestGraphDatabaseFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -28,10 +29,15 @@ public class CypherQueryExecutorTest {
 
     private ImpermanentGraphDatabase gdb;
     private CypherQueryExecutor cypherQueryExecutor;
+    private Node refNode;
 
     @Before
     public void setUp() throws Exception {
-        gdb = new ImpermanentGraphDatabase();
+        gdb = (ImpermanentGraphDatabase) new TestGraphDatabaseFactory().newImpermanentDatabase();
+        try (Transaction tx = gdb.beginTx()) {
+            refNode = gdb.createNode();
+            tx.success();
+        }
         cypherQueryExecutor = new CypherQueryExecutor(gdb, new Index(gdb));
     }
 
@@ -114,19 +120,16 @@ public class CypherQueryExecutorTest {
 
     @Test
     public void testCypherQuery() throws Exception {
-        Transaction tx = gdb.beginTx();
-        try {
-            final CypherQueryExecutor.CypherResult result = cypherQueryExecutor.cypherQuery("start n = node(0) return n",null);
+        try (Transaction tx = gdb.beginTx()) {
+            final CypherQueryExecutor.CypherResult result = cypherQueryExecutor.cypherQuery("start n = node(0) return n", null);
             assertEquals(asList("n"), result.getColumns());
-            assertTrue(result.getText(),result.getText().contains("Node[0]"));
+            assertTrue(result.getText(), result.getText().contains("Node[0]"));
             for (Map<String, Object> row : result) {
-                assertEquals(1,row.size());
-                assertEquals(true,row.containsKey("n"));
-                assertEquals(gdb.getReferenceNode(),row.get("n"));
+                assertEquals(1, row.size());
+                assertEquals(true, row.containsKey("n"));
+                assertEquals(refNode, row.get("n"));
             }
             tx.success();
-        } finally {
-            tx.finish();
         }
     }
 
@@ -136,7 +139,7 @@ public class CypherQueryExecutorTest {
         final Node n1 = gdb.createNode();
         n1.setProperty("name","n1");
         n1.setProperty("age",10);
-        final Relationship rel = gdb.getReferenceNode().createRelationshipTo(n1, DynamicRelationshipType.withName("REL"));
+        final Relationship rel = refNode.createRelationshipTo(n1, DynamicRelationshipType.withName("REL"));
         rel.setProperty("name","rel1");
         final CypherQueryExecutor.CypherResult result = cypherQueryExecutor.cypherQuery("start n=node(0) match p=n-[r]->m return p,n,r,m", null);
         System.out.println(result);

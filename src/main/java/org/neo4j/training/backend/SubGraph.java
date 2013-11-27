@@ -338,8 +338,8 @@ public class SubGraph {
         return null;
     }
 
-    void importTo(GraphDatabaseService gdb, final boolean hasReferenceNode) {
-        Map<Long, Long> nodeMapping = importNodes(gdb, hasReferenceNode);
+    void importTo(GraphDatabaseService gdb) {
+        Map<Long, Long> nodeMapping = importNodes(gdb);
         importRels(gdb, nodeMapping);
     }
 
@@ -356,9 +356,8 @@ public class SubGraph {
         }
     }
 
-    private Map<Long, Long> importNodes(GraphDatabaseService gdb, boolean hasReferenceNode) {
+    private Map<Long, Long> importNodes(GraphDatabaseService gdb) {
         Map<Long,Long> nodeMapping=new HashMap<Long, Long>();
-        if (hasReferenceNode) nodeMapping.put(0L,0L);
         final List<String> nodeSkipProps = Arrays.asList("id", "labels");
         for (Map.Entry<Long, Map<String, Object>> nodeData : getNodes().entrySet()) {
             final Long nodeDataId = nodeData.getKey();

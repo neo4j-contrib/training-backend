@@ -25,7 +25,7 @@ public class CypherExportServiceTest {
 
     @After
     public void tearDown() throws Exception {
-        tx.success();tx.finish();
+        tx.success();tx.close();
         db.shutdown();
     }
 
@@ -34,6 +34,6 @@ public class CypherExportServiceTest {
         Node node = db.createNode();
         node.setProperty("na'me","foo'bar");
         String exportStatement = new CypherExportService(db).export();
-        Assert.assertEquals("create \n(_1  {na'me:\"foo'bar\"})",exportStatement);
+        Assert.assertEquals("create \n(_0  {na'me:\"foo'bar\"})",exportStatement);
     }
 }

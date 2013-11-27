@@ -8,6 +8,7 @@ import org.eclipse.jetty.servlet.FilterMapping;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.neo4j.ext.udc.UdcSettings;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 import org.neo4j.kernel.EmbeddedReadOnlyGraphDatabase;
 import org.slf4j.Logger;
@@ -31,15 +32,10 @@ public class Backend
         System.setProperty(UdcSettings.udc_source.name(),"backend");
         int port = (args.length>0) ? Integer.parseInt(args[0]): getPort();
         boolean expose = args.length>2 && args[2].equalsIgnoreCase("expose");
-        GraphDatabaseService database = (args.length>1) ? embeddedGraphDatabase(args[1],expose) : null;
+        GraphDatabaseService database = null;
         final Backend backend = expose ? Backend.expose(database) : Backend.sandbox(database);
         backend.start(port);
         backend.join();
-    }
-
-    private static GraphDatabaseService embeddedGraphDatabase(String path, boolean expose) {
-        if (expose) return new EmbeddedGraphDatabase(path);
-        return new EmbeddedReadOnlyGraphDatabase(path);
     }
 
     public static Backend sandbox(GraphDatabaseService database) {

@@ -64,16 +64,14 @@ class Neo4jService {
         return invalidQuery ? cypherQueryViz((CypherQueryExecutor.CypherResult) null) : cypherQueryViz(cypherQuery(query));
     }
     public Map cypherQueryViz(CypherQueryExecutor.CypherResult result) {
-        Transaction tx = gdb.beginTx();
-        try {
+        try (Transaction tx = gdb.beginTx()) {
             final SubGraph subGraph = SubGraph.from(gdb).markSelection(result, true);
-            return map("nodes", subGraph.getNodes().values(), "links", subGraph.getRelationshipsWithIndexedEnds().values());
-        } catch(Exception e) {
-            LOG.error("Error during cypherQueryViz",e);
-            throw e;
-        } finally {
+            Map<String, Object> viz = map("nodes", subGraph.getNodes().values(), "links", subGraph.getRelationshipsWithIndexedEnds().values());
             tx.success();
-            tx.finish();
+            return viz;
+        } catch (Exception e) {
+            LOG.error("Error during cypherQueryViz", e);
+            throw e;
         }
     }
 
@@ -128,24 +126,6 @@ class Neo4jService {
         }
     }
 
-    public void deleteReferenceNode() {
-        if (rootNodeRemovalNotAllowed() || !hasReferenceNode()) return;
-        final Node root = gdb.getReferenceNode();
-        if (root!=null) {
-            final Transaction tx = gdb.beginTx();
-            try {
-                root.delete();
-                tx.success();
-            } finally {
-                tx.finish();
-            }
-        }
-    }
-
-    private boolean rootNodeRemovalNotAllowed() {
-        return !ownsDatabase || isInitialized();
-    }
-
     public String getVersion() {
         return version;
     }
@@ -156,21 +136,6 @@ class Neo4jService {
             version = version.replaceAll("^(\\d+\\.\\d+).*","$1");
             if (!version.matches("\\d+\\.\\d+")) throw new IllegalArgumentException("Incorrect version string "+version);
             this.version = version;
-        }
-    }
-
-    public boolean hasReferenceNode() {
-        if (gdb==null) return false;
-        Transaction tx = begin();
-        try {
-            boolean result = gdb.getReferenceNode() != null;
-            tx.success();
-            return result;
-        } catch (NotFoundException nfe) {
-            tx.success();
-            return false;
-        } finally {
-            tx.finish();
         }
     }
 
@@ -188,10 +153,10 @@ class Neo4jService {
     public void importGraph(SubGraph graph) {
         final Transaction tx = gdb.beginTx();
         try {
-            graph.importTo(gdb, hasReferenceNode());
+            graph.importTo(gdb);
             tx.success();
         } finally {
-            tx.finish();
+            tx.close();
         }
     }
 
@@ -242,15 +207,10 @@ class Neo4jService {
 
     public boolean isEmpty() {
         if (gdb==null) return true;
-        boolean refNode = hasReferenceNode();
-        Transaction tx = begin();
-        try {
+        try (Transaction tx = begin()) {
             int count = IteratorUtil.count(GlobalGraphOperations.at(gdb).getAllNodes());
-            int emptyCount = refNode ? 1 : 0;
             tx.success();
-            return emptyCount >= count;
-        } finally {
-            tx.finish();
+            return count == 0;
         }
     }
 

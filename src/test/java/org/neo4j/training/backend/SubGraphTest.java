@@ -24,15 +24,20 @@ import static org.neo4j.helpers.collection.MapUtil.map;
 public class SubGraphTest {
 
     private ImpermanentGraphDatabase gdb;
+    private Node refNode;
+    private Transaction tx;
 
     @Before
     public void setUp() throws Exception {
         gdb = new ImpermanentGraphDatabase();
-        gdb.beginTx();
+        tx = gdb.beginTx();
+        refNode = gdb.createNode();
     }
 
     @After
     public void tearDown() throws Exception {
+        tx.success();
+        tx.close();
         gdb.shutdown();
     }
 
@@ -45,14 +50,14 @@ public class SubGraphTest {
 
     @Test
     public void testFromSimpleCypherResult() throws Exception {
-        final CypherQueryExecutor.CypherResult result = result("node", gdb.getReferenceNode());
+        final CypherQueryExecutor.CypherResult result = result("node", refNode);
         final SubGraph graph = SubGraph.from(result);
         assertRefNodeGraph(graph);
     }
 
     @Test
     public void testFromRelCypherResult() throws Exception {
-        final Relationship rel = gdb.getReferenceNode().createRelationshipTo(gdb.getReferenceNode(), DynamicRelationshipType.withName("REL"));
+        final Relationship rel = refNode.createRelationshipTo(refNode, DynamicRelationshipType.withName("REL"));
         final CypherQueryExecutor.CypherResult result = result("rel", rel);
         final SubGraph graph = SubGraph.from(result);
         assertEquals(1, graph.getNodes().size());
@@ -63,8 +68,8 @@ public class SubGraphTest {
 
     @Test
     public void testFromPathCypherResult() throws Exception {
-        final Relationship rel = gdb.getReferenceNode().createRelationshipTo(gdb.getReferenceNode(), DynamicRelationshipType.withName("REL"));
-        final Path path = new PathImpl.Builder(gdb.getReferenceNode()).push(rel).build();
+        final Relationship rel = refNode.createRelationshipTo(refNode, DynamicRelationshipType.withName("REL"));
+        final Path path = new PathImpl.Builder(refNode).push(rel).build();
         final CypherQueryExecutor.CypherResult result = result("path", path);
         final SubGraph graph = SubGraph.from(result);
         assertEquals(1, graph.getNodes().size());
@@ -139,15 +144,17 @@ public class SubGraphTest {
     @Test
     public void testImportSubGraph() throws Exception {
         final SubGraph graph = new SubGraph();
+        graph.addNode(0L, map("name", "node0"));
         graph.addNode(10L, map("name", "node10"));
         graph.addRel(0L, map("name", "rel0", "start", 0L, "end", 10L, "type", "REL"));
-        graph.importTo(gdb, true);
-        assertEquals("node10", gdb.getNodeById(1).getProperty("name"));
+        graph.importTo(gdb);
+        assertEquals("node0", gdb.getNodeById(1).getProperty("name"));
+        assertEquals("node10", gdb.getNodeById(2).getProperty("name"));
         final Relationship rel = gdb.getRelationshipById(0);
         assertEquals("rel0", rel.getProperty("name"));
         assertEquals("REL", rel.getType().name());
-        assertEquals(1L, rel.getEndNode().getId());
-        assertEquals(0L, rel.getStartNode().getId());
+        assertEquals(1L, rel.getStartNode().getId());
+        assertEquals(2L, rel.getEndNode().getId());
     }
 
     private Map rel(int id, int from, int to, final String type) {
@@ -165,8 +172,8 @@ public class SubGraphTest {
 
     @Test
     public void testMarkRelationshipsFromVariableLength() throws Exception {
+        final Node n0 = refNode;
         final Node n1 = gdb.createNode();
-        final Node n0 = gdb.getReferenceNode();
         final Relationship relationship = n0.createRelationshipTo(n1, DynamicRelationshipType.withName("REL"));
         final SubGraph graph = SubGraph.from(gdb);
         final CypherQueryExecutor executor = new CypherQueryExecutor(gdb, null);
@@ -210,9 +217,9 @@ public class SubGraphTest {
 
     @Test
     public void testFromSimpleGraph() throws Exception {
+        final Node n0 = refNode;
         final Node n1 = gdb.createNode();
         n1.setProperty("name", "Node1");
-        final Node n0 = gdb.getReferenceNode();
         final Relationship relationship = n0.createRelationshipTo(n1, DynamicRelationshipType.withName("REL"));
         relationship.setProperty("related", true);
         final SubGraph graph = SubGraph.from(gdb);

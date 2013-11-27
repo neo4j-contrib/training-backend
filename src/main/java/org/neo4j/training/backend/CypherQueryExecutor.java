@@ -190,7 +190,7 @@ public class CypherQueryExecutor {
     		tx.success();
             return cypherResult;
     	} finally {
-			tx.finish();
+			tx.close();
 		}
     }
 

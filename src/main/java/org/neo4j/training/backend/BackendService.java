@@ -31,11 +31,11 @@ public class BackendService {
     }
 
     protected GraphStorage createGraphStorage() {
-        final String restUrl = System.getenv("NEO4J_URL");
+        String restUrlVar = System.getenv("NEO4J_REST_URL_VAR");
+        if (restUrlVar == null ) restUrlVar = "NEO4J_URL";
+        String restUrl = System.getenv(restUrlVar);
         RestAPI api = createRestApi(restUrl);
-        GraphStorage storage = null;
-        if (api!=null) storage = new Neo4jGraphStorage(api);
-        else storage = new InMemoryStorage();
+        GraphStorage storage = api == null ? new InMemoryStorage() : new Neo4jGraphStorage(api);
         LOG.debug("Graph Storage " + restUrl + "storage" + storage);
         return storage;
     }
@@ -106,22 +106,7 @@ public class BackendService {
         return now;
     }
 
-
-    public String shortenUrl(String uri) {
-        try {
-            final InputStream stream = (InputStream) new URL("http://tinyurl.com/api-create.php?url=" + URLEncoder.encode(uri, "UTF-8")).getContent();
-            final String shortUrl = new Scanner(stream).useDelimiter("\\z").next();
-            stream.close();
-            return shortUrl;
-        } catch (IOException ioe) {
-            return null;
-        }
-    }
-
     public Map<String, Object> execute(Neo4jService service, GraphInfo info) {
-        if (!info.hasRoot()) {
-            service.deleteReferenceNode();
-        }
         final Map<String, Object> result = this.execute(service, info.getInit(), info.getQuery(), info.getVersion());
         result.put("message",info.getMessage());
         return result;

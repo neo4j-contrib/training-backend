@@ -65,7 +65,7 @@ abstract class Route extends spark.Route {
         } finally {
             if (tx!=null) {
                 try {
-                    tx.finish();
+                    tx.close();
                 } catch (TransactionFailureException tfe) {
                     LOG.warn("Could not commit transaction",tfe.getMessage());
                 }

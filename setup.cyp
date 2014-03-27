@@ -215,7 +215,7 @@ Lab-Session 5 busiest actors
     },
     {
       "check": "input",
-      "test": "\\.name",
+      "test": "\\.name|name:",
       "failMsg": "You probably want to check the name property"
     },
     {
@@ -246,7 +246,7 @@ Lab-Session 5 busiest actors
     },
     {
       "check": "input",
-      "test": "\\.name",
+      "test": "\\.name|name:",
       "failMsg": "You probably want to check the name property"
     },
     {
@@ -279,7 +279,7 @@ Lab-Session 5 busiest actors
     },
     {
       "check": "input",
-      "test": "\\.name",
+      "test": "\\.name|name:",
       "failMsg": "You probably want to check the name property"
     },
     {
@@ -374,7 +374,7 @@ LIMIT 3
     },
     {
       "check": "input",
-      "test": "\\.title",
+      "test": "\\.title|title:",
       "failMsg": "You probably want to check the title property"
     },
     {

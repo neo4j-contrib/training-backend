@@ -302,14 +302,14 @@ Lab-Session 5 busiest actors
 
 ##Recommend 3 actors that Keanu Reeves should work with (but hasn’t).##
 
-This is kind of a *friends-of-a-friend* query, only that we don't have `FRIEND` relationships here but co-acting in a movie (`ACTS_IN`). So it might be a bit verbose in the first place. There are different approaches for the recommendation. So keep in mind that the top 3 most frequently appearing people in that network seem to be good candidates.
+This is kind of a *friends-of-a-friend* query, only that we don't have `FRIEND` relationships here but co-acting in a movie (`ACTED_IN`). So it might be a bit verbose in the first place. There are different approaches for the recommendation. So keep in mind that the top 3 most frequently appearing people in that network seem to be good candidates.
 
 Advanced Lab: Recommendations for Keanu Reeves
 
 MATCH (keanu:Person)-[:ACTED_IN]->()<-[:ACTED_IN]-(colleague), 
       (co_colleague)-[:ACTED_IN]->()<-[:ACTED_IN]-(colleague) 
 WHERE keanu.name = "Keanu Reeves" AND not(keanu = co_colleague)  
-AND not (co_colleague)-[:ACTS_IN]->()<-[:ACTS_IN]-(keanu) 
+AND not (co_colleague)-[:ACTED_IN]->()<-[:ACTED_IN]-(keanu) 
 RETURN co_colleague, count(*) 
 ORDER BY count(*) DESC 
 LIMIT 3
@@ -422,6 +422,64 @@ LIMIT 3
       "check": "input",
       "test": "(collect|count|avg|min|max)",
       "failMsg": "You certainly wanted to use an aggregation function"
+    }
+  ]
+}
+
+{
+  "message": "Creating Many Relationships",
+  "tasks": [
+    {
+      "check": "input",
+      "test": ":Person",
+      "failMsg": "You'll want to start at nodes labeled Person"
+    },
+    {
+      "check": "input",
+      "test": ":ACTED_IN\|DIRECTED",
+      "failMsg": "Your paths should use the ACTED_IN and DIRECTED relationships"
+    },
+    {
+      "check": "input",
+      "test": "(CREATE UNIQUE|MERGE)",
+      "failMsg": "To create things uniquely, use MERGE or CREATE UNIQUE"
+    },
+    {
+      "check": "input",
+      "test": ":KNOWS",
+      "failMsg": "You want to create :KNOWS relationships"
+    }
+  ]
+}
+
+
+{
+  "message": "Delete Emil and his relationships",
+  "tasks": [
+    {
+      "check": "input",
+      "test": ":Person",
+      "failMsg": "You'll want to start at nodes labeled Person"
+    },
+    {
+      "check": "input",
+      "test": "name.+Emil Eifrem",
+      "failMsg": "You probably want to check the name property for 'Emil Eifrem'"
+    },
+    {
+      "check": "input",
+      "test": "OPTIONAL\\s+MATCH",
+      "failMsg": "Remember not only to delete Emil but also to match his potential relationships and delete them."
+    },
+    {
+      "check": "input",
+      "test": "\\[\\w+\\]",
+      "failMsg": "You probably wanted to assign an identifier to your relationship"
+    },
+    {
+      "check": "input",
+      "test": "DELETE",
+      "failMsg": "You most probably want to DELETE Emil and his relationships"
     }
   ]
 }

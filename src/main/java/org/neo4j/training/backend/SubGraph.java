@@ -33,6 +33,21 @@ public class SubGraph {
         return data;
     }
 
+    public static SubGraph fromVizJson(Map json) {
+        SubGraph subGraph = new SubGraph();
+        List<Map<String,Object>> nodes= (List<Map<String, Object>>) json.get("nodes");
+        for (int i = 0; i < nodes.size(); i++) {
+            Map<String, Object> entry = nodes.get(i);
+            subGraph.addNode(i, entry);
+        }
+        List<Map<String,Object>> rels= (List<Map<String, Object>>) json.get("links");
+        for (int i = 0; i < rels.size(); i++) {
+            Map<String, Object> entry = rels.get(i);
+            subGraph.addRel(i, entry);
+        }
+        return subGraph;
+    }
+
     void addNode(long id, Map<String, Object> data) {
         nodes.put(id, data);
     }
@@ -311,7 +326,7 @@ public class SubGraph {
         }
     }
 
-    void addRel(Long id, Map<String, Object> data) {
+    void addRel(long id, Map<String, Object> data) {
         relationships.put(id,data);
     }
 
@@ -339,16 +354,19 @@ public class SubGraph {
     }
 
     void importTo(GraphDatabaseService gdb) {
-        Map<Long, Long> nodeMapping = importNodes(gdb);
-        importRels(gdb, nodeMapping);
+        try (Transaction tx = gdb.beginTx()) {
+            Map<Long, Long> nodeMapping = importNodes(gdb);
+            importRels(gdb, nodeMapping);
+            tx.success();
+        }
     }
 
     private void importRels(GraphDatabaseService gdb, Map<Long, Long> nodeMapping) {
-        final HashSet<String> relSkipProps = new HashSet<String>(asList("id", "start", "end", "type","labels"));
+        final HashSet<String> relSkipProps = new HashSet<>(asList("id", "start", "end", "type","labels"));
         for (Map<String, Object> relData : getRelationships().values()) {
-            Long start = (Long) relData.get("start");
+            long start = ((Number) relData.get("start")).intValue();
             final Node startNode = gdb.getNodeById(nodeMapping.get(start));
-            Long end = (Long) relData.get("end");
+            long end = ((Number) relData.get("end")).intValue();
             final Node endNode = gdb.getNodeById(nodeMapping.get(end));
             String type = (String) relData.get("type");
             final Relationship rel = startNode.createRelationshipTo(endNode, DynamicRelationshipType.withName(type));
@@ -357,7 +375,7 @@ public class SubGraph {
     }
 
     private Map<Long, Long> importNodes(GraphDatabaseService gdb) {
-        Map<Long,Long> nodeMapping=new HashMap<Long, Long>();
+        Map<Long,Long> nodeMapping=new HashMap<>();
         final List<String> nodeSkipProps = Arrays.asList("id", "labels");
         for (Map.Entry<Long, Map<String, Object>> nodeData : getNodes().entrySet()) {
             final Long nodeDataId = nodeData.getKey();

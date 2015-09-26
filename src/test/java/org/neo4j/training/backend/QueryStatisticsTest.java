@@ -3,9 +3,9 @@ package org.neo4j.training.backend;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.test.ImpermanentGraphDatabase;
 import org.neo4j.test.TestGraphDatabaseFactory;
 
 import java.util.Map;
@@ -18,13 +18,13 @@ import static org.junit.Assert.assertTrue;
  * @since 06.12.12
  */
 public class QueryStatisticsTest {
-    private ImpermanentGraphDatabase gdb;
+    private GraphDatabaseService gdb;
     private CypherQueryExecutor cypherQueryExecutor;
     private Node refNode;
 
     @Before
     public void setUp() throws Exception {
-        gdb = (ImpermanentGraphDatabase) new TestGraphDatabaseFactory().newImpermanentDatabase();
+        gdb = new TestGraphDatabaseFactory().newImpermanentDatabase();
         try (Transaction tx = gdb.beginTx()) {
             refNode = gdb.createNode();
             tx.success();
@@ -34,7 +34,7 @@ public class QueryStatisticsTest {
 
     @After
     public void tearDown() throws Exception {
-        gdb.shutdown();
+        if (gdb!=null) gdb.shutdown();
     }
 
     @Test

@@ -8,8 +8,8 @@ import org.neo4j.kernel.guard.GuardException;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
+//import javax.transaction.Transaction;
+//import javax.transaction.TransactionManager;
 import java.io.IOException;
 
 import static javax.servlet.http.HttpServletResponse.SC_REQUEST_TIMEOUT;
@@ -34,8 +34,8 @@ public class GuardingRequestFilter implements Filter {
         Neo4jService service = SessionService.getService((HttpServletRequest) request,false);
         GraphDatabaseAPI graphDatabase = (GraphDatabaseAPI) service.getGraphDatabase();
         try {
-            Transaction tx = graphDatabase.getDependencyResolver().resolveDependency(TransactionManager.class).getTransaction();
-            if (tx!=null) tx.rollback();
+//            Transaction tx = graphDatabase.getDependencyResolver().resolveDependency(TransactionManager.class).getTransaction();
+//            if (tx!=null) tx.rollback();
         } catch(Exception e) {
             LOG.error("Error rolling back transaction ",e);
         }

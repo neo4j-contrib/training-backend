@@ -3,7 +3,10 @@ package org.neo4j.training.backend;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.rest.graphdb.RestAPI;
+import org.neo4j.test.TestGraphDatabaseFactory;
 
 import java.util.Map;
 
@@ -35,6 +38,26 @@ public class BackendServiceTest {
         assertEquals("create",result.get("action"));
         assertEquals(ID,result.get("id"));
         assertEquals(INIT,result.get("init"));
+    }
+
+    @Test
+    public void testInitUsingJson() throws Throwable {
+        final GraphStorage storage = Mockito.mock(Neo4jGraphStorage.class);
+        final BackendService service = new BackendService() {
+            @Override
+            protected GraphStorage createGraphStorage() {
+                return storage;
+            }
+        };
+        Neo4jService neo4jService = new Neo4jService();
+        Map<String,Object> result = service.execute(neo4jService, SubGraphTest.TEST_JSON_GRAPH_STRING, null, null);
+        GraphDatabaseService db = neo4jService.getGraphDatabase();
+        try (Transaction tx = db.beginTx()) {
+            assertEquals("node0",db.getNodeById(0).getProperty("name"));
+            assertEquals("node1",db.getNodeById(1).getProperty("name"));
+            assertEquals("rel0",db.getRelationshipById(0).getProperty("name"));
+            tx.success();
+        }
     }
 
     @Test

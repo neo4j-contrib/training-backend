@@ -1,5 +1,6 @@
 package org.neo4j.training.backend;
 
+import com.google.gson.Gson;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +24,10 @@ import static org.neo4j.helpers.collection.MapUtil.map;
  */
 public class SubGraphTest {
 
+    public static final Map<String,Object> TEST_JSON_GRAPH = map(
+            "nodes", asList(map("name", "node0"), map("name", "node1")),
+            "links", asList(map("name", "rel0", "start", 0, "end", 1, "type", "REL")));
+    public final static String TEST_JSON_GRAPH_STRING = new Gson().toJson(TEST_JSON_GRAPH);
     private ImpermanentGraphDatabase gdb;
     private Node refNode;
     private Transaction tx;
@@ -139,6 +144,19 @@ public class SubGraphTest {
         final SubGraph graph2 = SubGraph.from(restCypherResult, false);
         assertEquals(1, graph2.getNodes().size());
         assertEquals(0, graph2.getRelationships().size());
+    }
+
+    @Test
+    public void testFromVizJson() throws Exception {
+        SubGraph graph = SubGraph.fromVizJson(TEST_JSON_GRAPH);
+        graph.importTo(gdb);
+        assertEquals("node0", gdb.getNodeById(1).getProperty("name"));
+        assertEquals("node1", gdb.getNodeById(2).getProperty("name"));
+        final Relationship rel = gdb.getRelationshipById(0);
+        assertEquals("rel0", rel.getProperty("name"));
+        assertEquals("REL", rel.getType().name());
+        assertEquals(1L, rel.getStartNode().getId());
+        assertEquals(2L, rel.getEndNode().getId());
     }
 
     @Test

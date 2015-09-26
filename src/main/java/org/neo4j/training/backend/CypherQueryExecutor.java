@@ -7,7 +7,6 @@ import org.neo4j.cypher.javacompat.QueryStatistics;
 import org.neo4j.graphdb.*;
 import org.neo4j.helpers.collection.IteratorUtil;
 import org.neo4j.helpers.collection.MapUtil;
-import org.neo4j.kernel.impl.util.StringLogger;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -29,7 +28,7 @@ public class CypherQueryExecutor {
     public CypherQueryExecutor(GraphDatabaseService gdb, Index index) {
 	    this.gdb = gdb;
         this.index = index;
-        executionEngine = new ExecutionEngine(gdb, StringLogger.SYSTEM);
+        executionEngine = new ExecutionEngine(gdb);
     }
 
     public boolean isMutatingQuery(String query) {
@@ -184,7 +183,7 @@ public class CypherQueryExecutor {
         Transaction tx = gdb.beginTx();
         try {
             final ExecutionResult result = canProfileQuery(query) ? executionEngine.profile(query) : executionEngine.execute(query);
-            final Collection<Map<String, Object>> data = IteratorUtil.asCollection(result);
+            final Collection<Map<String, Object>> data = IteratorUtil.asCollection((Iterable)result);
             time=System.currentTimeMillis()-time;
             CypherResult cypherResult = new CypherResult(result.columns(), data, result.getQueryStatistics(),time, result.executionPlanDescription(), prettify(query));
     		tx.success();

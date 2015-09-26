@@ -1,5 +1,6 @@
 package org.neo4j.training.backend;
 
+import com.google.gson.Gson;
 import org.neo4j.rest.graphdb.RestAPI;
 import org.neo4j.rest.graphdb.RestAPIFacade;
 import org.slf4j.Logger;
@@ -67,9 +68,15 @@ public class BackendService {
         long start = System.currentTimeMillis(), time = start;
         try {
             time = trace("service", time);
-            if (init != null && service.isMutatingQuery(init)) {
-                final CypherQueryExecutor.CypherResult result = service.initCypherQuery(init);
-                if (result.getQuery() != null) data.put("init", result.getQuery());
+            if (init != null) {
+                if (isJson(init)) {
+                    SubGraph subGraph = SubGraph.fromVizJson(new Gson().fromJson(init, Map.class));
+                    subGraph.importTo(service.getGraphDatabase());
+                } else
+                    if (service.isMutatingQuery(init)) {
+                        final CypherQueryExecutor.CypherResult result = service.initCypherQuery(init);
+                        if (result.getQuery() != null) data.put("init", result.getQuery());
+                    }
             }
             if (initial) {
                 service.setInitialized();
@@ -94,6 +101,10 @@ public class BackendService {
         time = trace("all", start);
         data.put("time", time-start);
         return data;
+    }
+
+    private boolean isJson(String init) {
+        return init.startsWith("{");
     }
 
     private boolean dontInitialize(Neo4jService service) {

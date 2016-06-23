@@ -61,6 +61,7 @@ CREATE
 mystic-river = lesson1 +
 
 CREATE (m:Movie {title: 'Mystic River',tagline:'We bury our sins here, Dave. We wash them clean.',released:2003})
+CREATE (p:Person {name:'Kevin Bacon'})
 
 tasks
 
